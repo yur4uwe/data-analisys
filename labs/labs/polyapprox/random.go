@@ -80,9 +80,8 @@ var (
 
 	OriginalData = common.ChartDataset{
 		Label:           "Original",
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#2563eb",
-		BackgroundColor: "rgba(37, 99, 235, 0.1)",
+		BackgroundColor: []string{"rgba(37, 99, 235, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
@@ -91,9 +90,8 @@ var (
 
 	NoisyData = common.ChartDataset{
 		Label:           "Noisy",
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#dc2626",
-		BackgroundColor: "rgba(220, 38, 38, 0.1)",
+		BackgroundColor: []string{"rgba(220, 38, 38, 0.1)"},
 		PointRadius:     2,
 		BorderWidth:     1,
 		ShowLine:        true,
@@ -102,9 +100,8 @@ var (
 
 	LinearApprox = common.ChartDataset{
 		Label:           "Linear Approximation",
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#16a34a",
-		BackgroundColor: "rgba(22, 163, 74, 0.1)",
+		BackgroundColor: []string{"rgba(22, 163, 74, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
@@ -114,9 +111,8 @@ var (
 
 	QuadApprox = common.ChartDataset{
 		Label:           "Quadratic Approximation",
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#9333ea",
-		BackgroundColor: "rgba(147, 51, 234, 0.1)",
+		BackgroundColor: []string{"rgba(147, 51, 234, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
@@ -127,6 +123,7 @@ var (
 	RandomFitsChart = common.Chart{
 		ID:          RandomFitsID,
 		Title:       "Random Data Fits",
+		Type:        common.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
 		XAxisConfig: common.LinearAxis,

@@ -62,6 +62,10 @@ func (a *App) GetLabConfig(labID string) (*common.LabConfig, error) {
 
 // Render processes the render request asynchronously to avoid blocking the GTK main loop
 func (a *App) Render(req *common.RenderRequest) {
+	if req == nil {
+		runtime.EventsEmit(a.ctx, "renderError", render.NewRenderError("request is nil"))
+		return
+	}
 	// Run rendering in a goroutine to prevent blocking the UI thread
 	go func() {
 		res := a.RenderSync(req)

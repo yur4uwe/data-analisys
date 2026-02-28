@@ -20,6 +20,7 @@ const (
 	ChartTypeBar     ChartType = "bar"
 	ChartTypeScatter ChartType = "scatter"
 	ChartTypeBubble  ChartType = "bubble"
+	ChartTypePie     ChartType = "pie"
 )
 
 type AxisConfig string
@@ -32,7 +33,7 @@ const (
 )
 
 const (
-	Color1  = "#2563eb"
+	Color1  = "#2563eb" // bad color
 	Color2  = "#dc2626"
 	Color3  = "#fbbf24"
 	Color4  = "#22c55e"

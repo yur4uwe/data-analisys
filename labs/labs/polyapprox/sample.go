@@ -43,9 +43,8 @@ var (
 
 	sampleDataGraph = common.ChartDataset{
 		Label:           "Sample Data",
-		Type:            common.ChartTypeLine,
 		BorderColor:     common.Color10,
-		BackgroundColor: "rgba(0, 0, 0, 0.1)",
+		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
@@ -55,9 +54,8 @@ var (
 
 	sampleDataApproxGraph = common.ChartDataset{
 		Label:           "Sample Data Approximation",
-		Type:            common.ChartTypeLine,
 		BorderColor:     common.Color6,
-		BackgroundColor: "rgba(0, 0, 0, 0.1)",
+		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
 		BorderWidth:     2,
 		PointRadius:     0,
 		ShowLine:        true,
@@ -71,6 +69,7 @@ var (
 	SampleDataChart = common.Chart{
 		ID:          SampleDataID,
 		Title:       "Sample Data (CSV)",
+		Type:        common.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
 		XAxisConfig: common.LinearAxis,

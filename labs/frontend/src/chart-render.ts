@@ -1,4 +1,4 @@
-import { Chart } from "chart.js";
+import { Chart, ChartTypeRegistry } from "chart.js";
 import { common } from "../wailsjs/go/models";
 
 // Store chart instances globally for access
@@ -43,106 +43,165 @@ export function renderChart(chartConfig: common.Chart) {
     console.log("Canvas context is null or undefined!");
     return;
   }
-  const chart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: chartConfig.datasets["orig-data"].pointData
-        ? chartConfig.datasets["orig-data"].pointData.map(
-            ({ x }: { x: number; y: number }) => x.toFixed(2),
-          )
-        : [],
-      datasets: Object.values(chartConfig.datasets).map((dataset) => ({
+
+  let labels: string[] = [];
+  if (chartConfig.labels) {
+    labels = chartConfig.labels;
+  } else if (
+    chartConfig.datasets["orig-data"] != undefined &&
+    chartConfig.datasets["orig-data"].pointData
+  ) {
+    labels = chartConfig.datasets["orig-data"].pointData.map(
+      ({ x }: { x: number; y: number }) => x.toFixed(2),
+    );
+  }
+
+  // Determine if chart type requires scales (axes)
+  const chartType = chartConfig.type as keyof ChartTypeRegistry;
+  const hasScales = !["pie", "doughnut", "polarArea"].includes(chartType);
+
+  // Process datasets based on chart type
+  const processedDatasets = Object.values(chartConfig.datasets).map(
+    (dataset) => {
+      let data: any;
+
+      // For pie/doughnut/polarArea charts, use simple array values
+      if (!hasScales && dataset.data) {
+        data = dataset.data;
+      }
+      // For charts with scales, use pointData y-values or data array
+      else if (dataset.pointData) {
+        data = dataset.pointData.map((p) => p.y);
+      } else {
+        data = dataset.data ?? [];
+      }
+
+      // For pie/doughnut charts, generate color palette if not specified
+      let backgroundColor = dataset.backgroundColor;
+      if (!hasScales && !backgroundColor && Array.isArray(data)) {
+        const colors = [
+          "#FF6384",
+          "#36A2EB",
+          "#FFCE56",
+          "#4BC0C0",
+          "#9966FF",
+          "#FF9F40",
+          "#FF6384",
+          "#C9CBCF",
+          "#4BC0C0",
+          "#FF6384",
+        ];
+        backgroundColor = data.map(
+          (_: any, idx: number) => colors[idx % colors.length],
+        );
+      }
+
+      return {
         label: dataset.label,
-        data: dataset.pointData || [],
+        data: data,
         borderColor: dataset.borderColor ?? "#666",
-        backgroundColor: dataset.backgroundColor ?? "transparent",
+        backgroundColor: backgroundColor ?? "transparent",
         tension: dataset.tension ?? 0,
         fill: dataset.fill ?? false,
         hidden: dataset.hidden ?? false,
         pointRadius: dataset.pointRadius ?? 0,
         borderWidth: dataset.borderWidth ?? 2,
         showLine: dataset.showLine !== false,
-      })),
+      };
     },
-    options: {
-      responsive: true,
-      plugins: {
-        title: {
-          display: true,
-          text: chartConfig.title,
+  );
+
+  const chartOptions: any = {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: chartConfig.title,
+        color: "#ffffff",
+        font: {
+          size: 18,
+          weight: "bold",
+        },
+        padding: {
+          top: 10,
+          bottom: 20,
+        },
+      },
+      legend: {
+        labels: {
           color: "#ffffff",
           font: {
-            size: 18,
-            weight: "bold",
+            size: 13,
           },
-          padding: {
-            top: 10,
-            bottom: 20,
-          },
-        },
-        legend: {
-          labels: {
-            color: "#ffffff",
-            font: {
-              size: 13,
-            },
-            padding: 15,
-            usePointStyle: true,
-          },
-        },
-        tooltip: {
-          backgroundColor: "rgba(0, 0, 0, 0.9)",
-          titleColor: "#ffffff",
-          bodyColor: "#ffffff",
-          borderColor: "#ffffff",
-          borderWidth: 1,
-          padding: 12,
-          displayColors: true,
+          padding: 15,
+          usePointStyle: true,
         },
       },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: chartConfig.xAxisLabel,
-            color: "#ffffff",
-            font: {
-              size: 14,
-              weight: "bold",
-            },
-          },
-          ticks: {
-            color: "#ffffff",
-            font: {
-              size: 12,
-            },
-          },
-          grid: {
-            color: "rgba(255, 255, 255, 0.2)",
-          },
-        },
-        y: {
-          title: {
-            display: true,
-            text: chartConfig.yAxisLabel,
-            color: "#ffffff",
-            font: {
-              size: 14,
-              weight: "bold",
-            },
-          },
-          ticks: {
-            color: "#ffffff",
-            font: {
-              size: 12,
-            },
-          },
-          grid: {
-            color: "rgba(255, 255, 255, 0.2)",
-          },
-        },
+      tooltip: {
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
+        titleColor: "#ffffff",
+        bodyColor: "#ffffff",
+        borderColor: "#ffffff",
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
       },
     },
+  };
+
+  // Only add scales for charts that use them
+  if (hasScales) {
+    chartOptions.scales = {
+      x: {
+        title: {
+          display: true,
+          text: chartConfig.xAxisLabel,
+          color: "#ffffff",
+          font: {
+            size: 14,
+            weight: "bold",
+          },
+        },
+        ticks: {
+          color: "#ffffff",
+          font: {
+            size: 12,
+          },
+        },
+        grid: {
+          color: "rgba(255, 255, 255, 0.2)",
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: chartConfig.yAxisLabel,
+          color: "#ffffff",
+          font: {
+            size: 14,
+            weight: "bold",
+          },
+        },
+        ticks: {
+          color: "#ffffff",
+          font: {
+            size: 12,
+          },
+        },
+        grid: {
+          color: "rgba(255, 255, 255, 0.2)",
+        },
+      },
+    };
+  }
+
+  const chart = new Chart(ctx, {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: processedDatasets,
+    },
+    options: chartOptions,
   });
 
   // Store chart instance for later access

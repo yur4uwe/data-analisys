@@ -1,6 +1,7 @@
 package visualization
 
 import (
+	"fmt"
 	"labs/labs/common"
 	"math"
 )
@@ -8,7 +9,7 @@ import (
 const (
 	FunctionChartID = "function"
 
-	FunctionGraphID = "function-graph"
+	FunctionGraphID = "orig-data" // due to the default, baseline graph on frontend, one chart should be called orig-data
 
 	VariableStartID = "start"
 	VariableEndID   = "end"
@@ -47,6 +48,7 @@ var (
 	FunctionChart = common.Chart{
 		ID:          FunctionChartID,
 		Title:       "Function Representation",
+		Type:        common.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
 		XAxisConfig: common.LinearAxis,
@@ -56,13 +58,15 @@ var (
 			VariableEnd,
 			VariableStep,
 		},
+		Datasets: map[string]*common.ChartDataset{
+			FunctionGraphID: &FunctionGraph,
+		},
 	}
 
 	FunctionGraph = common.ChartDataset{
 		Label:           "Function Graph",
-		Type:            common.ChartTypeLine,
-		BorderColor:     common.ColorTransparent,
-		BackgroundColor: common.Color1,
+		BorderColor:     common.Color1,
+		BackgroundColor: []string{common.ColorTransparent},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
@@ -77,6 +81,7 @@ func f(x float64) float64 {
 }
 
 func RenderFunction(req *common.RenderRequest) (res *common.RenderResponse) {
+	fmt.Printf("Rendering %s\n", req.ChartID)
 	start, ok := req.GetChartVariable(FunctionChartID, VariableStartID)
 	if !ok {
 		start = VariableStart.Default
@@ -123,7 +128,8 @@ func RenderFunction(req *common.RenderRequest) (res *common.RenderResponse) {
 	chartCopy := common.CopyChart(FunctionChart)
 	chartCopy.UpdatePointsForDataset(FunctionGraphID, x, y)
 
+	res = common.NewRenderResponse()
 	res.AddChart(FunctionChartID, &chartCopy)
 
-	return
+	return res
 }

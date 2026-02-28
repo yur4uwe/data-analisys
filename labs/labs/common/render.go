@@ -42,9 +42,15 @@ type RenderResponse struct {
 	Error  error            `json:"error,omitempty"`
 }
 
+func NewRenderResponse() *RenderResponse {
+	return &RenderResponse{
+		Charts: make(map[string]Chart),
+	}
+}
+
 func (rr *RenderResponse) AddChart(chartId string, c *Chart) {
 	if rr == nil {
-		rr = &RenderResponse{}
+		rr = NewRenderResponse()
 	}
 	rr.Charts[chartId] = *c
 }

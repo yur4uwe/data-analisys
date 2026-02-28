@@ -14,13 +14,13 @@ const (
 var (
 	mseGraph = common.ChartDataset{
 		Label:       "MSE vs Degree",
-		Type:        common.ChartTypeLine,
 		BorderColor: common.Color11,
 	}
 
 	RandomMSEChart = common.Chart{
 		ID:          RandomMSEID,
 		Title:       "MSE vs Degree (Random)",
+		Type:        common.ChartTypeLine,
 		XAxisLabel:  "Polynomial Degree",
 		YAxisLabel:  "Mean Squared Error",
 		XAxisConfig: common.LinearAxis,

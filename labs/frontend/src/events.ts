@@ -47,6 +47,10 @@ window.addEventListener(
   "activeChartChange",
   (event: ActiveChartChangeEvent) => {
     window.activeChartId = event.chartId;
+    const error = document.getElementById("error-container");
+    if (error) {
+      error.innerHTML = "";
+    }
     InitializeChart(event.chartId);
     fetchChartData();
   },

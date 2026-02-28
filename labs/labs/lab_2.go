@@ -76,9 +76,8 @@ var (
 	originalData = common.ChartDataset{
 		Label:           "Original",
 		Data:            nil,
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#2563eb", // Blue
-		BackgroundColor: "rgba(37, 99, 235, 0.1)",
+		BackgroundColor: []string{"rgba(37, 99, 235, 0.1)"},
 		Tension:         0,
 		Fill:            false,
 		Hidden:          false,
@@ -91,9 +90,8 @@ var (
 	noisyData = common.ChartDataset{
 		Label:           "Noisy",
 		Data:            nil,
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#dc2626", // Red
-		BackgroundColor: "rgba(220, 38, 38, 0.1)",
+		BackgroundColor: []string{"rgba(220, 38, 38, 0.1)"},
 		Tension:         0,
 		Fill:            false,
 		Hidden:          false,
@@ -116,9 +114,8 @@ var (
 	recurrentAvg = common.ChartDataset{
 		Label:           "Recurrent Average",
 		Data:            nil,
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#16a34a", // Green
-		BackgroundColor: "rgba(22, 163, 74, 0.1)",
+		BackgroundColor: []string{"rgba(22, 163, 74, 0.1)"},
 		Tension:         0,
 		Fill:            false,
 		Hidden:          false,
@@ -131,9 +128,8 @@ var (
 	slidingWindowAvg = common.ChartDataset{
 		Label:           "Sliding Window Average",
 		Data:            nil,
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#9333ea", // Purple
-		BackgroundColor: "rgba(147, 51, 234, 0.1)",
+		BackgroundColor: []string{"rgba(147, 51, 234, 0.1)"},
 		Tension:         0,
 		Fill:            false,
 		Hidden:          false,
@@ -156,9 +152,8 @@ var (
 	exponentialAverage = common.ChartDataset{
 		Label:           "Exponential Average",
 		Data:            nil,
-		Type:            common.ChartTypeLine,
 		BorderColor:     "#ea580c", // Orange
-		BackgroundColor: "rgba(234, 88, 12, 0.1)",
+		BackgroundColor: []string{"rgba(234, 88, 12, 0.1)"},
 		Tension:         0,
 		Fill:            false,
 		Hidden:          false,
@@ -181,6 +176,7 @@ var (
 	main = common.Chart{
 		ID:          mainChartID,
 		Title:       "Primary Data Processing Methods Visualization",
+		Type:        common.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
 		XAxisConfig: common.LinearAxis,

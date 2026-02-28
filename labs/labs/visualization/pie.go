@@ -1,30 +1,37 @@
 package visualization
 
 import (
+	"fmt"
 	"labs/labs/common"
 )
 
 const (
 	RadialChartID = "radial"
 
-	RadialGraphID = "radial-graph"
+	RadialGraphID = "orig-data" // due to the default, baseline graph on frontend, one chart should be called orig-data
 )
 
 var (
 	RadialGraph = common.ChartDataset{
-		Label:           "Radial Representation",
-		Type:            common.ChartTypeBar,
-		BorderColor:     common.Color2,
-		BackgroundColor: "rgba(220, 38, 38, 0.1)",
-		BorderWidth:     2,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
+		Label:       "Radial Representation",
+		BorderColor: common.Color2,
+		BackgroundColor: []string{
+			"rgba(220, 38, 38, 0.1)",
+			common.Color10,
+			common.Color11,
+			common.Color12,
+			common.Color5,
+		},
+		BorderWidth: 2,
+		PointRadius: 0,
+		ShowLine:    true,
+		Togglable:   true,
 	}
 
 	RadialChart = common.Chart{
 		ID:          RadialChartID,
 		Title:       "Radial Plot",
+		Type:        common.ChartTypePie,
 		XAxisLabel:  "Category",
 		YAxisLabel:  "Amount",
 		XAxisConfig: common.CategoryAxis,
@@ -38,6 +45,7 @@ var (
 )
 
 func RenderRadialPlot(req *common.RenderRequest) (res *common.RenderResponse) {
+	fmt.Printf("Rendering %s\n", req.ChartID)
 	values, err := ReadCategoricalCSV("../data/lab_4_var_12.csv")
 	if err != nil {
 		return res.NewErrorf("encountered error while reading csv: %v", err)
@@ -62,7 +70,8 @@ func RenderRadialPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 
 	chartCopy.Labels = labels
 
+	res = common.NewRenderResponse()
 	res.AddChart(RadialChartID, &chartCopy)
 
-	return
+	return res
 }

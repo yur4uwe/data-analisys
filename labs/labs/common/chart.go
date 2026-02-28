@@ -32,8 +32,7 @@ type ChartDataset struct {
 	PointData       []DataPoint    `json:"pointData,omitempty"` // For scatter/bubble charts with {x,y}
 	GraphVariables  []MutableField `json:"fields,omitempty"`
 	BorderColor     string         `json:"borderColor"`
-	BackgroundColor string         `json:"backgroundColor,omitempty"`
-	Type            ChartType      `json:"type"` // "line", "bar", "scatter", "bubble"
+	BackgroundColor []string       `json:"backgroundColor,omitempty"`
 	Tension         float64        `json:"tension,omitempty"`
 	Fill            bool           `json:"fill,omitempty"`
 	Hidden          bool           `json:"hidden,omitempty"`
@@ -65,6 +64,7 @@ func (cd *ChartDataset) UpdatePoints(x, y []float64) error {
 type Chart struct {
 	ID             string                   `json:"id"`
 	Title          string                   `json:"title"`
+	Type           ChartType                `json:"type"` // "line", "bar", "scatter", "bubble", "pie"
 	XAxisLabel     string                   `json:"xAxisLabel"`
 	YAxisLabel     string                   `json:"yAxisLabel"`
 	XAxisConfig    AxisConfig               `json:"xAxisConfig,omitempty"` // X-axis scale configuration
@@ -96,7 +96,18 @@ func (c *Chart) Meta() ChartMetadata {
 }
 
 func (c *Chart) UpdatePointsForDataset(datasetId string, x, y []float64) error {
+	if _, ok := c.Datasets[datasetId]; !ok {
+		return errors.New("dataset not found in chart")
+	}
 	return c.Datasets[datasetId].UpdatePoints(x, y)
+}
+
+func (c *Chart) UpdateDataForDataset(datasetId string, data []float64) error {
+	if _, ok := c.Datasets[datasetId]; !ok {
+		return errors.New("dataset not found in chart")
+	}
+	c.Datasets[datasetId].Data = data
+	return nil
 }
 
 type ChartMetadata struct {

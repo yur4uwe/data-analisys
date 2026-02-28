@@ -1,28 +1,37 @@
 package visualization
 
-import "labs/labs/common"
+import (
+	"fmt"
+	"labs/labs/common"
+)
 
 const (
 	BarChartID = "bar"
 
-	BarGraphID = "bar-graph"
+	BarGraphID = "orig-data"
 )
 
 var (
 	BarGraph = common.ChartDataset{
-		Label:           "Bar Representation",
-		Type:            common.ChartTypeBar,
-		BorderColor:     common.Color1,
-		BackgroundColor: "rgba(0, 0, 0, 0.1)",
-		BorderWidth:     10,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
+		Label: "Bar Representation",
+		BackgroundColor: []string{
+			common.Color1,
+			common.Color2,
+			common.Color3,
+			common.Color4,
+			common.Color5,
+		},
+		BorderColor: "rgba(0, 0, 0, 0.1)",
+		BorderWidth: 2,
+		PointRadius: 0,
+		ShowLine:    true,
+		Togglable:   true,
 	}
 
 	BarChart = common.Chart{
 		ID:          BarChartID,
 		Title:       "Bar Plot",
+		Type:        common.ChartTypeBar,
 		XAxisLabel:  "Spending Type",
 		YAxisLabel:  "Amount Spent",
 		XAxisConfig: common.CategoryAxis,
@@ -36,18 +45,13 @@ var (
 )
 
 func RenderBarPlot(req *common.RenderRequest) (res *common.RenderResponse) {
+	fmt.Printf("Rendering %s\n", req.ChartID)
 	values, err := ReadCategoricalCSV("../data/lab_4_var_12.csv")
 	if err != nil {
 		return res.NewErrorf("encountered error while reading csv: %v", err)
 	}
 
-	x := make([]float64, 0, len(values))
 	y := make([]float64, 0, len(values))
-
-	for i := range len(values) {
-		x = append(x, float64(i))
-	}
-
 	labels := make([]string, 0, len(values))
 	for k, v := range values {
 		y = append(y, v)
@@ -56,11 +60,15 @@ func RenderBarPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 
 	chartCopy := common.CopyChart(BarChart)
 
-	chartCopy.UpdatePointsForDataset(BarChartID, x, y)
+	err = chartCopy.UpdateDataForDataset(BarGraphID, y)
+	if err != nil {
+		return res.NewErrorf("encountered error while updating points: %v", err)
+	}
 
 	chartCopy.Labels = labels
 
+	res = common.NewRenderResponse()
 	res.AddChart(BarChartID, &chartCopy)
 
-	return
+	return res
 }
