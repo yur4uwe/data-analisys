@@ -19,7 +19,8 @@ type LabFactory func() common.LabProvider
 // App struct
 type App struct {
 	ctx      context.Context
-	registry map[string]common.LabProvider // Cached initialized labs
+	registry map[string]common.LabProvider
+	cache    *ResponseCache
 }
 
 // NewApp creates a new App application struct
@@ -32,6 +33,8 @@ func NewApp() *App {
 // startup is called when the app starts
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
+	a.cache = NewResponseCache()
 
 	// Register lab factories (no instantiation yet)
 	a.registry[labs.Lab2ID] = labs.NewLab2()
@@ -66,9 +69,21 @@ func (a *App) Render(req *common.RenderRequest) {
 		runtime.EventsEmit(a.ctx, "renderError", render.NewRenderError("request is nil"))
 		return
 	}
+	if cachedRes, found := a.cache.GetResponse(req); found {
+		fmt.Printf("Cache hit for lab %q, chart %q\n", req.LabID, req.ChartID)
+		if render.IsRenderError(cachedRes.Error) {
+			runtime.EventsEmit(a.ctx, "renderError", cachedRes)
+		} else {
+			runtime.EventsEmit(a.ctx, "renderComplete", cachedRes)
+		}
+		return
+	}
+
 	// Run rendering in a goroutine to prevent blocking the UI thread
 	go func() {
 		res := a.RenderSync(req)
+
+		a.cache.StoreResponse(req, &res)
 
 		if render.IsRenderError(res.Error) {
 			runtime.EventsEmit(a.ctx, "renderError", res)
