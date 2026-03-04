@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"encoding/csv"
 	"fmt"
 	"labs/labs/common"
 	"labs/uncsv"
@@ -44,9 +43,8 @@ func RenderTesterSalary(req *common.RenderRequest) (res *common.RenderResponse) 
 		}
 		defer f.Close()
 
-		r := csv.NewReader(f)
-		r.Comma = ';'
-		d := uncsv.NewDecoder(r)
+		d := uncsv.NewDecoder(f)
+		d.Comma = ';'
 		salaryRecords = &SalaryRecord{}
 		if err := d.Decode(salaryRecords); err != nil {
 			return res.NewErrorf("tester salary chart: error while decoding csv: %s", err.Error())

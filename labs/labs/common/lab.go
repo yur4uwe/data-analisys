@@ -33,3 +33,7 @@ func NewLabConfig(labID, labName string, charts map[string]*Chart) LabConfig {
 		Charts: charts,
 	}
 }
+
+func (lc *LabConfig) Meta() LabMetadata {
+	return lc.Lab
+}

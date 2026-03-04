@@ -1,7 +1,6 @@
 package visualization
 
 import (
-	"encoding/csv"
 	"fmt"
 	"labs/labs/common"
 	"labs/uncsv"
@@ -54,9 +53,8 @@ func RenderLinear(req *common.RenderRequest) (res *common.RenderResponse) {
 	}
 	defer f.Close()
 
-	r := csv.NewReader(f)
-	r.Comma = ','
-	d := uncsv.NewDecoder(r)
+	d := uncsv.NewDecoder(f)
+	d.SetComma(',')
 	rec := &DailyRevenue{}
 	if err := d.Decode(rec); err != nil {
 		return res.NewErrorf("error while decoding csv: %v", err)

@@ -19,22 +19,33 @@ type FieldEncoder interface {
 }
 
 type Decoder struct {
-	r *csv.Reader
+	r     io.Reader
+	Comma rune
 }
 
-func NewDecoder(r *csv.Reader) *Decoder {
+func (d *Decoder) SetComma(comma rune) {
+	d.Comma = comma
+}
+
+func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{
 		r: r,
 	}
 }
 
 type Encoder struct {
-	w *csv.Writer
+	w io.Writer
 }
 
 // Assumes struct of arrays
 func (p *Decoder) Decode(v any) error {
-	header, err := p.r.Read()
+	csvReader := csv.NewReader(p.r)
+	csvReader.ReuseRecord = true
+	if p.Comma != 0 {
+		csvReader.Comma = p.Comma
+	}
+
+	header, err := csvReader.Read()
 	if err != nil {
 		return err
 	}
@@ -60,7 +71,7 @@ func (p *Decoder) Decode(v any) error {
 	}
 
 	for rowIdx := 0; ; rowIdx++ {
-		row, err := p.r.Read()
+		row, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		} else if err != nil {

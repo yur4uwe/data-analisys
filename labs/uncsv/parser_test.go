@@ -1,15 +1,29 @@
 package uncsv
 
 import (
-	"encoding/csv"
+	"strconv"
 	"strings"
 	"testing"
 )
 
+// assertSlicesEqual checks that two slices have identical length and elements.
+func assertSlicesEqual[T comparable](t *testing.T, name string, got, want []T) {
+	t.Helper()
+	if len(got) != len(want) {
+		t.Errorf("%s: length mismatch: got %d, want %d", name, len(got), len(want))
+		return
+	}
+	for i := range got {
+		if got[i] != want[i] {
+			t.Errorf("%s[%d]: got %v, want %v", name, i, got[i], want[i])
+		}
+	}
+}
+
 // TestNewDecoder tests the NewDecoder constructor
 func TestNewDecoder(t *testing.T) {
 	csvData := "header1,header2\nvalue1,value2"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 
 	decoder := NewDecoder(reader)
 
@@ -21,7 +35,7 @@ func TestNewDecoder(t *testing.T) {
 // TestDecodeEmptyData tests decoding with empty CSV data
 func TestDecodeEmptyData(t *testing.T) {
 	csvData := ""
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -34,12 +48,15 @@ func TestDecodeEmptyData(t *testing.T) {
 	if err != nil {
 		t.Logf("Decode with empty data returned error: %v", err)
 	}
+
+	assertSlicesEqual(t, "Field1", result.Field1, []string{})
+	assertSlicesEqual(t, "Field2", result.Field2, []int{})
 }
 
 // TestDecodeSimpleStruct tests decoding into a simple struct of arrays
 func TestDecodeSimpleStruct(t *testing.T) {
 	csvData := "name,age\nAlice,30\nBob,25\nCharlie,35"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -51,12 +68,15 @@ func TestDecodeSimpleStruct(t *testing.T) {
 	if err != nil {
 		t.Errorf("Decode failed: %v", err)
 	}
+
+	assertSlicesEqual(t, "Name", result.Name, []string{"Alice", "Bob", "Charlie"})
+	assertSlicesEqual(t, "Age", result.Age, []int{30, 25, 35})
 }
 
 // TestDecodeWithFloats tests decoding struct with float arrays
 func TestDecodeWithFloats(t *testing.T) {
 	csvData := "id,value,price\n1,10.5,20.99\n2,15.3,30.50\n3,12.7,25.75"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -69,12 +89,16 @@ func TestDecodeWithFloats(t *testing.T) {
 	if err != nil {
 		t.Errorf("Decode with floats failed: %v", err)
 	}
+
+	assertSlicesEqual(t, "ID", result.ID, []int{1, 2, 3})
+	assertSlicesEqual(t, "Value", result.Value, []float64{10.5, 15.3, 12.7})
+	assertSlicesEqual(t, "Price", result.Price, []float64{20.99, 30.50, 25.75})
 }
 
 // TestDecodeSingleRow tests decoding a single row
 func TestDecodeSingleRow(t *testing.T) {
 	csvData := "name,status\nJohn,active"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -86,12 +110,15 @@ func TestDecodeSingleRow(t *testing.T) {
 	if err != nil {
 		t.Errorf("Decode single row failed: %v", err)
 	}
+
+	assertSlicesEqual(t, "Name", result.Name, []string{"John"})
+	assertSlicesEqual(t, "Status", result.Status, []string{"active"})
 }
 
 // TestDecodeMultipleFields tests decoding with many fields
 func TestDecodeMultipleFields(t *testing.T) {
 	csvData := "a,b,c,d,e\n1,2,3,4,5\n6,7,8,9,10"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -106,12 +133,18 @@ func TestDecodeMultipleFields(t *testing.T) {
 	if err != nil {
 		t.Errorf("Decode multiple fields failed: %v", err)
 	}
+
+	assertSlicesEqual(t, "A", result.A, []int{1, 6})
+	assertSlicesEqual(t, "B", result.B, []int{2, 7})
+	assertSlicesEqual(t, "C", result.C, []int{3, 8})
+	assertSlicesEqual(t, "D", result.D, []int{4, 9})
+	assertSlicesEqual(t, "E", result.E, []int{5, 10})
 }
 
 // TestDecodeWithMissingValues tests decoding with missing/empty values
 func TestDecodeWithMissingValues(t *testing.T) {
 	csvData := "name,value\nAlice,100\nBob,\nCharlie,200"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -121,14 +154,17 @@ func TestDecodeWithMissingValues(t *testing.T) {
 
 	err := decoder.Decode(&result)
 	if err != nil {
-		t.Logf("Decode with missing values returned error: %v", err)
+		t.Errorf("Decode with missing values failed: %v", err)
 	}
+
+	assertSlicesEqual(t, "Name", result.Name, []string{"Alice", "Bob", "Charlie"})
+	assertSlicesEqual(t, "Value", result.Value, []string{"100", "", "200"})
 }
 
 // TestDecodeIntoNil tests Decode with nil pointer
 func TestDecodeIntoNil(t *testing.T) {
 	csvData := "a,b\n1,2"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	err := decoder.Decode(nil)
@@ -140,7 +176,7 @@ func TestDecodeIntoNil(t *testing.T) {
 // TestDecodeIntoNonStruct tests Decode with non-struct type
 func TestDecodeIntoNonStruct(t *testing.T) {
 	csvData := "a,b\n1,2"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result int
@@ -153,7 +189,7 @@ func TestDecodeIntoNonStruct(t *testing.T) {
 // TestDecodeIntoNonArrayFields tests Decode where struct fields are not arrays
 func TestDecodeIntoNonArrayFields(t *testing.T) {
 	csvData := "name,age\nAlice,30"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -170,7 +206,7 @@ func TestDecodeIntoNonArrayFields(t *testing.T) {
 // TestDecodeFieldDecoderInterface tests FieldDecoder interface implementation
 func TestDecodeFieldDecoderInterface(t *testing.T) {
 	csvData := "value\n100\n200\n300"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -190,14 +226,18 @@ type CustomType struct {
 
 func (c *CustomType) DecodeCSV(s string) error {
 	// Simple implementation for testing
-	_, err := csv.NewReader(strings.NewReader(s)).Read()
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		return err
+	}
+	c.Value = val
 	return err
 }
 
 // TestDecodeWithSpecialCharacters tests decoding CSV with special characters
 func TestDecodeWithSpecialCharacters(t *testing.T) {
 	csvData := "description\n\"Hello, World\"\n\"Line1\nLine2\"\n\"Quote\"\"Test\""
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result struct {
@@ -213,7 +253,7 @@ func TestDecodeWithSpecialCharacters(t *testing.T) {
 // TestDecodeMultipleTimes tests calling Decode multiple times
 func TestDecodeMultipleTimes(t *testing.T) {
 	csvData := "name,value\nAlice,100\nBob,200"
-	reader := csv.NewReader(strings.NewReader(csvData))
+	reader := strings.NewReader(csvData)
 	decoder := NewDecoder(reader)
 
 	var result1 struct {

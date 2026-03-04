@@ -1,7 +1,6 @@
 package visualization
 
 import (
-	"encoding/csv"
 	"fmt"
 	"labs/labs/common"
 	"labs/uncsv"
@@ -60,10 +59,8 @@ func RenderRadialPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 	}
 	defer f.Close()
 
-	r := csv.NewReader(f)
-	r.Comma = ';'
-
-	d := uncsv.NewDecoder(r)
+	d := uncsv.NewDecoder(f)
+	d.SetComma(';')
 	rec := &RevenueSources{}
 	if err := d.Decode(rec); err != nil {
 		return res.NewErrorf("encountered error while decoding csv: %v", err)

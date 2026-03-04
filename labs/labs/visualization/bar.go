@@ -1,7 +1,6 @@
 package visualization
 
 import (
-	"encoding/csv"
 	"fmt"
 	"labs/labs/common"
 	"labs/uncsv"
@@ -61,10 +60,8 @@ func RenderBarPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 	}
 	defer f.Close()
 
-	r := csv.NewReader(f)
-
-	d := uncsv.NewDecoder(r)
-
+	d := uncsv.NewDecoder(f)
+	d.SetComma(',')
 	spending := &Spending{}
 	err = d.Decode(spending)
 	if err != nil {

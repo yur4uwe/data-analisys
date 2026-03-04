@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"encoding/csv"
 	"labs/labs/common"
 	"labs/uncsv"
 	"os"
@@ -47,9 +46,8 @@ func RenderEmpiricalDistribution(req *common.RenderRequest) (res *common.RenderR
 		}
 		defer f.Close()
 
-		r := csv.NewReader(f)
-		r.Comma = ';'
-		d := uncsv.NewDecoder(r)
+		d := uncsv.NewDecoder(f)
+		d.Comma = ';'
 		salaryRecords = &SalaryRecord{}
 		if err := d.Decode(salaryRecords); err != nil {
 			return res.NewErrorf("empirical distribution chart: error while decoding csv: %s", err.Error())
