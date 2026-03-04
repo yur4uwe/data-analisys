@@ -1,5 +1,5 @@
 import { Render } from "../wailsjs/go/main/App";
-import { common } from "../wailsjs/go/models";
+import { charting } from "../wailsjs/go/models";
 import { registry } from "./registry";
 
 export function fetchChartData(): void {
@@ -15,7 +15,7 @@ export function fetchChartData(): void {
 
   console.log("Fetching lab data for id:", labId);
 
-  const req = new common.RenderRequest({
+  const req = new charting.RenderRequest({
     LabID: labId,
     ChartID: chartId,
     GraphVariables: registry.getGraphVariables(labId, chartId),

@@ -1,17 +1,17 @@
-import { common } from "../wailsjs/go/models";
+import { charting } from "../wailsjs/go/models";
 import { buildInputFieldName } from "./lab-init";
 
 class Registry {
-  registry: Record<string, common.LabMetadata>;
+  registry: Record<string, charting.LabMetadata>;
   constructor() {
     this.registry = {};
   }
 
-  addLab(id: string, metadata: common.LabMetadata) {
+  addLab(id: string, metadata: charting.LabMetadata) {
     this.registry[id] = metadata;
   }
 
-  getLab(id: string): common.LabMetadata | undefined {
+  getLab(id: string): charting.LabMetadata | undefined {
     return this.registry[id];
   }
 

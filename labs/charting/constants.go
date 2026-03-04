@@ -1,4 +1,4 @@
-package common
+package charting
 
 // FieldControl specifies what UI element should render a field
 // Values correspond directly to HTML input types

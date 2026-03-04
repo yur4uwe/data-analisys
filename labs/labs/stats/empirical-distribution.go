@@ -1,7 +1,7 @@
 package stats
 
 import (
-	"labs/labs/common"
+	"labs/charting"
 	"labs/uncsv"
 	"os"
 	"sort"
@@ -13,31 +13,31 @@ const (
 )
 
 var (
-	EmpiricalDistributionGraph = common.ChartDataset{
+	EmpiricalDistributionGraph = charting.ChartDataset{
 		Label:           "Empirical Distribution Function F(x)",
-		BorderColor:     common.Color2,
-		BackgroundColor: []string{common.ColorTransparent},
+		BorderColor:     charting.Color2,
+		BackgroundColor: []string{charting.ColorTransparent},
 		ShowLine:        true,
 		PointRadius:     3,
 		BorderWidth:     2,
 		Togglable:       false,
 	}
 
-	EmpiricalDistributionChart = common.Chart{
+	EmpiricalDistributionChart = charting.Chart{
 		ID:          EmpiricalDistributionChartID,
 		Title:       "Empirical Distribution Function of Salaries",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "Salary (USD)",
-		XAxisConfig: common.LinearAxis,
+		XAxisConfig: charting.LinearAxis,
 		YAxisLabel:  "F(x) - Cumulative Probability",
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			EmpiricalDistributionGraphID: &EmpiricalDistributionGraph,
 		},
 	}
 )
 
-func RenderEmpiricalDistribution(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderEmpiricalDistribution(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	// Load data if not already loaded
 	if salaryRecords == nil {
 		f, err := os.Open("../data/lab_5_var_12.csv")
@@ -83,12 +83,12 @@ func RenderEmpiricalDistribution(req *common.RenderRequest) (res *common.RenderR
 		y = append(y, fx)
 	}
 
-	copyChart := common.CopyChart(EmpiricalDistributionChart)
+	copyChart := charting.CopyChart(EmpiricalDistributionChart)
 	if err := copyChart.UpdatePointsForDataset(EmpiricalDistributionGraphID, x, y); err != nil {
 		return res.NewErrorf("error updating dataset: %s", err.Error())
 	}
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(EmpiricalDistributionChartID, &copyChart)
 	return res
 }

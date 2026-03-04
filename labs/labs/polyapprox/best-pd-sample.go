@@ -3,7 +3,7 @@ package polyapprox
 import (
 	"errors"
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/render"
 	"math"
 )
@@ -14,26 +14,26 @@ const (
 )
 
 var (
-	SampleMSEChart = common.Chart{
+	SampleMSEChart = charting.Chart{
 		ID:          SampleMSEID,
 		Title:       "MSE vs Degree (CSV)",
 		XAxisLabel:  "Polynomial Degree",
 		YAxisLabel:  "Mean Squared Error",
-		XAxisConfig: common.LinearAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			OriginalDataID: &mseGraph,
 		},
-		ChartVariables: []common.MutableField{},
+		ChartVariables: []charting.MutableField{},
 	}
 
 	SampleMSEMetadata = SampleMSEChart.Meta()
 )
 
-func RenderSamplePolynomialMSE(req *common.RenderRequest) *common.RenderResponse {
+func RenderSamplePolynomialMSE(req *charting.RenderRequest) *charting.RenderResponse {
 	x, y, err := ReadSampleCSV("../data/lab_3_var_12.csv")
 	if err != nil {
-		return &common.RenderResponse{
+		return &charting.RenderResponse{
 			Error: render.NewRenderError("failed to read CSV file"),
 		}
 	}
@@ -53,11 +53,11 @@ func RenderSamplePolynomialMSE(req *common.RenderRequest) *common.RenderResponse
 		errs = append(errs, CalculateMSE(x, y, coeffs))
 	}
 
-	chartCopy := common.CopyChart(RandomMSEChart)
+	chartCopy := charting.CopyChart(RandomMSEChart)
 	chartCopy.UpdatePointsForDataset(OriginalDataID, degrees, errs)
 
-	return &common.RenderResponse{
-		Charts: map[string]common.Chart{
+	return &charting.RenderResponse{
+		Charts: map[string]charting.Chart{
 			SampleMSEID: chartCopy,
 		},
 	}

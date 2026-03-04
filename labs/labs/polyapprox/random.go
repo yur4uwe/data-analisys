@@ -2,7 +2,7 @@ package polyapprox
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/render"
 	"math/rand"
 )
@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	ChartVariables = []common.MutableField{
+	ChartVariables = []charting.MutableField{
 		{
 			ID:      IntervalStartID,
 			Label:   "Start",
@@ -35,7 +35,7 @@ var (
 			Min:     -100.0,
 			Max:     100.0,
 			Step:    0.5,
-			Control: common.ControlNumber,
+			Control: charting.ControlNumber,
 		},
 		{
 			ID:      IntervalEndID,
@@ -44,7 +44,7 @@ var (
 			Min:     -100.0,
 			Max:     100.0,
 			Step:    0.5,
-			Control: common.ControlNumber,
+			Control: charting.ControlNumber,
 		},
 		{
 			ID:      IntervalStepID,
@@ -53,7 +53,7 @@ var (
 			Min:     0.01,
 			Max:     1,
 			Step:    0.01,
-			Control: common.ControlRange,
+			Control: charting.ControlRange,
 		},
 		{
 			ID:      NoiseAmpID,
@@ -62,23 +62,23 @@ var (
 			Min:     1,
 			Max:     100,
 			Step:    1,
-			Control: common.ControlRange,
+			Control: charting.ControlRange,
 		},
 	}
 
-	LinearFitCoefficients = common.MutableField{
+	LinearFitCoefficients = charting.MutableField{
 		ID:      LinearFitCoefficientsID,
 		Label:   "Linear Fit Coefficients",
-		Control: common.ControlNoControl,
+		Control: charting.ControlNoControl,
 	}
 
-	QuadraticFitCoefficients = common.MutableField{
+	QuadraticFitCoefficients = charting.MutableField{
 		ID:      QuadraticFitCoefficientsID,
 		Label:   "Quadratic Fit Coefficients",
-		Control: common.ControlNoControl,
+		Control: charting.ControlNoControl,
 	}
 
-	OriginalData = common.ChartDataset{
+	OriginalData = charting.ChartDataset{
 		Label:           "Original",
 		BorderColor:     "#2563eb",
 		BackgroundColor: []string{"rgba(37, 99, 235, 0.1)"},
@@ -88,7 +88,7 @@ var (
 		Togglable:       true,
 	}
 
-	NoisyData = common.ChartDataset{
+	NoisyData = charting.ChartDataset{
 		Label:           "Noisy",
 		BorderColor:     "#dc2626",
 		BackgroundColor: []string{"rgba(220, 38, 38, 0.1)"},
@@ -98,7 +98,7 @@ var (
 		Togglable:       true,
 	}
 
-	LinearApprox = common.ChartDataset{
+	LinearApprox = charting.ChartDataset{
 		Label:           "Linear Approximation",
 		BorderColor:     "#16a34a",
 		BackgroundColor: []string{"rgba(22, 163, 74, 0.1)"},
@@ -106,10 +106,10 @@ var (
 		BorderWidth:     2,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables:  []common.MutableField{LinearFitCoefficients},
+		GraphVariables:  []charting.MutableField{LinearFitCoefficients},
 	}
 
-	QuadApprox = common.ChartDataset{
+	QuadApprox = charting.ChartDataset{
 		Label:           "Quadratic Approximation",
 		BorderColor:     "#9333ea",
 		BackgroundColor: []string{"rgba(147, 51, 234, 0.1)"},
@@ -117,18 +117,18 @@ var (
 		BorderWidth:     2,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables:  []common.MutableField{QuadraticFitCoefficients},
+		GraphVariables:  []charting.MutableField{QuadraticFitCoefficients},
 	}
 
-	RandomFitsChart = common.Chart{
+	RandomFitsChart = charting.Chart{
 		ID:          RandomFitsID,
 		Title:       "Random Data Fits",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
-		XAxisConfig: common.LinearAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			OriginalDataID: &OriginalData,
 			NoisyDataID:    &NoisyData,
 			LinearApproxID: &LinearApprox,
@@ -139,10 +139,10 @@ var (
 
 	RandomFitsMetadata = RandomFitsChart.Meta()
 
-	Metadata = common.LabMetadata{
+	Metadata = charting.LabMetadata{
 		ID:   LabID,
 		Name: "Least Squares Approximation",
-		Charts: map[string]common.ChartMetadata{
+		Charts: map[string]charting.ChartMetadata{
 			RandomFitsID: RandomFitsMetadata,
 			SampleDataID: SampleDataMetadata,
 			RandomMSEID:  RandomMSEMetadata,
@@ -151,7 +151,7 @@ var (
 	}
 )
 
-func RenderRandomFits(req *common.RenderRequest) *common.RenderResponse {
+func RenderRandomFits(req *charting.RenderRequest) *charting.RenderResponse {
 	start, hasStart := req.GetChartVariable(RandomFitsID, IntervalStartID)
 	end, hasEnd := req.GetChartVariable(RandomFitsID, IntervalEndID)
 	step, hasStep := req.GetChartVariable(RandomFitsID, IntervalStepID)
@@ -171,20 +171,20 @@ func RenderRandomFits(req *common.RenderRequest) *common.RenderResponse {
 	}
 
 	if step <= 0 {
-		return &common.RenderResponse{Error: render.NewRenderError("step must be greater than 0")}
+		return &charting.RenderResponse{Error: render.NewRenderError("step must be greater than 0")}
 	}
 	if start > end {
-		return &common.RenderResponse{Error: render.NewRenderError("start interval must be less than or equal to end interval")}
+		return &charting.RenderResponse{Error: render.NewRenderError("start interval must be less than or equal to end interval")}
 	}
 
 	seed := int64(230420067)
 	x, y, origY := GenerateRandomSeries(start, end, step, noiseAmp, seed)
 
 	if len(x) == 0 {
-		return &common.RenderResponse{Error: render.NewRenderError("no data generated with given parameters")}
+		return &charting.RenderResponse{Error: render.NewRenderError("no data generated with given parameters")}
 	}
 
-	chartCopy := common.CopyChart(RandomFitsChart)
+	chartCopy := charting.CopyChart(RandomFitsChart)
 
 	chartCopy.UpdatePointsForDataset(OriginalDataID, x, origY)
 	chartCopy.UpdatePointsForDataset(NoisyDataID, x, y)
@@ -211,8 +211,8 @@ func RenderRandomFits(req *common.RenderRequest) *common.RenderResponse {
 		fmt.Println("quadratic fit failed:", err)
 	}
 
-	return &common.RenderResponse{
-		Charts: map[string]common.Chart{
+	return &charting.RenderResponse{
+		Charts: map[string]charting.Chart{
 			RandomFitsID: chartCopy,
 		},
 	}

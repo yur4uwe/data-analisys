@@ -1,7 +1,7 @@
 package stats
 
 import (
-	"labs/labs/common"
+	"labs/charting"
 	"math"
 )
 
@@ -19,89 +19,89 @@ const (
 )
 
 var (
-	MeanSampleField = common.MutableField{
+	MeanSampleField = charting.MutableField{
 		ID:      VariableSampleMeanID,
 		Label:   "Mean for the sample",
 		Default: 0,
 		Min:     -100,
 		Max:     100,
 		Step:    1,
-		Control: common.ControlNumber,
+		Control: charting.ControlNumber,
 	}
 
-	StdDevSampleField = common.MutableField{
+	StdDevSampleField = charting.MutableField{
 		ID:      VariableSampleStdDevID,
 		Label:   "Standart Deviation for the sample",
 		Default: 10,
 		Min:     0,
 		Max:     100,
 		Step:    1,
-		Control: common.ControlRange,
+		Control: charting.ControlRange,
 	}
 
-	MeanCorrelationGraph = common.ChartDataset{
+	MeanCorrelationGraph = charting.ChartDataset{
 		Label:           "Relatioship between error of mean and size of sample",
-		BorderColor:     common.Color1,
-		BackgroundColor: []string{common.ColorTransparent},
+		BorderColor:     charting.Color1,
+		BackgroundColor: []string{charting.ColorTransparent},
 		ShowLine:        true,
 		Togglable:       true,
 		PointRadius:     0,
-		GraphVariables: []common.MutableField{
+		GraphVariables: []charting.MutableField{
 			MeanSampleField,
 		},
 	}
 
-	StdDevCorrelationGraph = common.ChartDataset{
+	StdDevCorrelationGraph = charting.ChartDataset{
 		Label:           "Relationship between error of stddev and size of sample",
-		BorderColor:     common.Color8,
-		BackgroundColor: []string{common.ColorTransparent},
+		BorderColor:     charting.Color8,
+		BackgroundColor: []string{charting.ColorTransparent},
 		ShowLine:        true,
 		Togglable:       true,
 		PointRadius:     0,
-		GraphVariables: []common.MutableField{
+		GraphVariables: []charting.MutableField{
 			StdDevSampleField,
 		},
 	}
 
-	MaxSampleSizeField = common.MutableField{
+	MaxSampleSizeField = charting.MutableField{
 		ID:      VariableMaxSampleSizeID,
 		Label:   "Max size to calculate error for",
 		Default: 50_000,
 		Min:     100,
 		Max:     100_000,
 		Step:    100,
-		Control: common.ControlNumber,
+		Control: charting.ControlNumber,
 	}
-	StepSampleSizeField = common.MutableField{
+	StepSampleSizeField = charting.MutableField{
 		ID:      VariableSampleSizeStepID,
 		Label:   "Step to choose which sizes to calculate error for",
 		Default: 10,
 		Min:     0,
 		Max:     100_000,
 		Step:    1,
-		Control: common.ControlNumber,
+		Control: charting.ControlNumber,
 	}
 
-	CorrelationChart = common.Chart{
+	CorrelationChart = charting.Chart{
 		ID:          CorrelationChartID,
 		Title:       "Relationship between sample size and error of its parameters",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "Sample Size",
-		XAxisConfig: common.LogarithmicAxis,
+		XAxisConfig: charting.LogarithmicAxis,
 		YAxisLabel:  "Error",
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			MeanCorellationGraphID:   &MeanCorrelationGraph,
 			StdDevCorrelationGraphID: &StdDevCorrelationGraph,
 		},
-		ChartVariables: []common.MutableField{
+		ChartVariables: []charting.MutableField{
 			MaxSampleSizeField,
 		},
 		// RenderFunc set in init() to avoid initialization cycle
 	}
 )
 
-func RenderError(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderError(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	max_size, ok := req.GetChartVariable(CorrelationChartID, VariableMaxSampleSizeID)
 	if !ok {
 		max_size = MaxSampleSizeField.Default
@@ -132,12 +132,12 @@ func RenderError(req *common.RenderRequest) (res *common.RenderResponse) {
 		stddev_errors = append(stddev_errors, math.Abs(actual_stddev-theoretical_stddev))
 	}
 
-	copyChart := common.CopyChart(CorrelationChart)
+	copyChart := charting.CopyChart(CorrelationChart)
 
 	copyChart.UpdatePointsForDataset(MeanCorellationGraphID, x, mean_errors)
 	copyChart.UpdatePointsForDataset(StdDevCorrelationGraphID, x, stddev_errors)
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(CorrelationChartID, &copyChart)
 	return res
 }

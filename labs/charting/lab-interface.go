@@ -1,4 +1,4 @@
-package common
+package charting
 
 type LabProvider interface {
 	GetMetadata() LabMetadata

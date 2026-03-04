@@ -2,7 +2,7 @@ package polyapprox
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/render"
 )
 
@@ -12,20 +12,20 @@ const (
 )
 
 var (
-	mseGraph = common.ChartDataset{
+	mseGraph = charting.ChartDataset{
 		Label:       "MSE vs Degree",
-		BorderColor: common.Color11,
+		BorderColor: charting.Color11,
 	}
 
-	RandomMSEChart = common.Chart{
+	RandomMSEChart = charting.Chart{
 		ID:          RandomMSEID,
 		Title:       "MSE vs Degree (Random)",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "Polynomial Degree",
 		YAxisLabel:  "Mean Squared Error",
-		XAxisConfig: common.LinearAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			OriginalDataID: &mseGraph,
 		},
 		ChartVariables: ChartVariables,
@@ -34,7 +34,7 @@ var (
 	RandomMSEMetadata = RandomMSEChart.Meta()
 )
 
-func RenderRandomPolynomialMSE(req *common.RenderRequest) *common.RenderResponse {
+func RenderRandomPolynomialMSE(req *charting.RenderRequest) *charting.RenderResponse {
 	start, hasStart := req.GetChartVariable(RandomMSEID, IntervalStartID)
 	end, hasEnd := req.GetChartVariable(RandomMSEID, IntervalEndID)
 	step, hasStep := req.GetChartVariable(RandomMSEID, IntervalStepID)
@@ -54,16 +54,16 @@ func RenderRandomPolynomialMSE(req *common.RenderRequest) *common.RenderResponse
 	}
 
 	if step <= 0 {
-		return &common.RenderResponse{Error: render.NewRenderError("step must be greater than 0")}
+		return &charting.RenderResponse{Error: render.NewRenderError("step must be greater than 0")}
 	}
 	if start > end {
-		return &common.RenderResponse{Error: render.NewRenderError("start interval must be less than or equal to end interval")}
+		return &charting.RenderResponse{Error: render.NewRenderError("start interval must be less than or equal to end interval")}
 	}
 
 	seed := int64(230420067)
 	x, y, _ := GenerateRandomSeries(start, end, step, noiseAmp, seed)
 	if len(x) == 0 {
-		return &common.RenderResponse{Error: render.NewRenderError("no data generated with given parameters")}
+		return &charting.RenderResponse{Error: render.NewRenderError("no data generated with given parameters")}
 	}
 
 	maxDegree := min(len(x)-1, 45)
@@ -81,11 +81,11 @@ func RenderRandomPolynomialMSE(req *common.RenderRequest) *common.RenderResponse
 		errs = append(errs, CalculateMSE(x, y, coeffs))
 	}
 
-	chartCopy := common.CopyChart(RandomMSEChart)
+	chartCopy := charting.CopyChart(RandomMSEChart)
 	chartCopy.UpdatePointsForDataset(OriginalDataID, degrees, errs)
 
-	return &common.RenderResponse{
-		Charts: map[string]common.Chart{
+	return &charting.RenderResponse{
+		Charts: map[string]charting.Chart{
 			RandomMSEID: chartCopy,
 		},
 	}

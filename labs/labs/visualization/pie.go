@@ -2,7 +2,7 @@ package visualization
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/uncsv"
 	"os"
 )
@@ -14,15 +14,15 @@ const (
 )
 
 var (
-	RadialGraph = common.ChartDataset{
+	RadialGraph = charting.ChartDataset{
 		Label:       "Revenue Sources",
-		BorderColor: common.ColorTransparent,
+		BorderColor: charting.ColorTransparent,
 		BackgroundColor: []string{
-			common.Color8,
-			common.Color10,
-			common.Color11,
-			common.Color4,
-			common.Color5,
+			charting.Color8,
+			charting.Color10,
+			charting.Color11,
+			charting.Color4,
+			charting.Color5,
 		},
 		BorderWidth: 2,
 		PointRadius: 0,
@@ -30,15 +30,15 @@ var (
 		Togglable:   true,
 	}
 
-	RadialChart = common.Chart{
+	RadialChart = charting.Chart{
 		ID:          RadialChartID,
 		Title:       "Revenue Sources",
-		Type:        common.ChartTypePie,
+		Type:        charting.ChartTypePie,
 		XAxisLabel:  "Category",
 		YAxisLabel:  "Amount",
-		XAxisConfig: common.CategoryAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.CategoryAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			RadialGraphID: &RadialGraph,
 		},
 	}
@@ -51,7 +51,7 @@ type RevenueSources struct {
 	Sum     []float64 `csv:"Сума (грн)"`
 }
 
-func RenderRadialPlot(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderRadialPlot(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	fmt.Printf("Rendering %s\n", req.ChartID)
 	f, err := os.Open("../data/lab_4_var_12_revenue_sources.csv")
 	if err != nil {
@@ -66,7 +66,7 @@ func RenderRadialPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 		return res.NewErrorf("encountered error while decoding csv: %v", err)
 	}
 
-	chartCopy := common.CopyChart(RadialChart)
+	chartCopy := charting.CopyChart(RadialChart)
 
 	// Pie charts need simple data array, not point data
 	err = chartCopy.UpdateDataForDataset(RadialGraphID, rec.Sum)
@@ -76,7 +76,7 @@ func RenderRadialPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 
 	chartCopy.Labels = rec.Sources
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(RadialChartID, &chartCopy)
 
 	return res

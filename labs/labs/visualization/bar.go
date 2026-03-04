@@ -2,7 +2,7 @@ package visualization
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/uncsv"
 	"os"
 )
@@ -14,14 +14,14 @@ const (
 )
 
 var (
-	BarGraph = common.ChartDataset{
+	BarGraph = charting.ChartDataset{
 		Label: "Spending",
 		BackgroundColor: []string{
-			common.Color1,
-			common.Color2,
-			common.Color3,
-			common.Color4,
-			common.Color5,
+			charting.Color1,
+			charting.Color2,
+			charting.Color3,
+			charting.Color4,
+			charting.Color5,
 		},
 		BorderColor: "rgba(0, 0, 0, 0.1)",
 		BorderWidth: 2,
@@ -30,15 +30,15 @@ var (
 		Togglable:   true,
 	}
 
-	BarChart = common.Chart{
+	BarChart = charting.Chart{
 		ID:          BarChartID,
 		Title:       "Spending By Category",
-		Type:        common.ChartTypeBar,
+		Type:        charting.ChartTypeBar,
 		XAxisLabel:  "Spending Type",
 		YAxisLabel:  "Amount Spent",
-		XAxisConfig: common.CategoryAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.CategoryAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			BarGraphID: &BarGraph,
 		},
 	}
@@ -51,7 +51,7 @@ type Spending struct {
 	Sum      []float64 `csv:"Сума (грн)"`
 }
 
-func RenderBarPlot(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderBarPlot(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	fmt.Printf("Rendering %s\n", req.ChartID)
 
 	f, err := os.Open("../data/lab_4_var_12_spending.csv")
@@ -68,7 +68,7 @@ func RenderBarPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 		return res.NewErrorf("error decoding csv: %v", err)
 	}
 
-	chartCopy := common.CopyChart(BarChart)
+	chartCopy := charting.CopyChart(BarChart)
 
 	err = chartCopy.UpdateDataForDataset(BarGraphID, spending.Sum)
 	if err != nil {
@@ -77,7 +77,7 @@ func RenderBarPlot(req *common.RenderRequest) (res *common.RenderResponse) {
 
 	chartCopy.Labels = spending.Category
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(BarChartID, &chartCopy)
 
 	return res

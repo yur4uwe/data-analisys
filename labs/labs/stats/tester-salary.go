@@ -2,7 +2,7 @@ package stats
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/uncsv"
 	"math"
 	"os"
@@ -14,28 +14,28 @@ const (
 )
 
 var (
-	TesterSalaryGraph = common.ChartDataset{
+	TesterSalaryGraph = charting.ChartDataset{
 		Label:           "Tester Salary",
-		BackgroundColor: []string{common.Color1, common.Color2, common.Color3, common.Color4, common.Color5},
+		BackgroundColor: []string{charting.Color1, charting.Color2, charting.Color3, charting.Color4, charting.Color5},
 		PointRadius:     0,
 		ShowLine:        true,
 	}
 
-	TesterSalaryChart = common.Chart{
+	TesterSalaryChart = charting.Chart{
 		ID:          TesterSalaryBarChartID,
 		Title:       "Tester Salary Distribution",
-		Type:        common.ChartTypeBar,
+		Type:        charting.ChartTypeBar,
 		XAxisLabel:  "amount, $",
-		XAxisConfig: common.LinearAxis,
+		XAxisConfig: charting.LinearAxis,
 		YAxisLabel:  "people, n",
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			TesterSalaryBarGraphID: &TesterSalaryGraph,
 		},
 	}
 )
 
-func RenderTesterSalary(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderTesterSalary(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	if salaryRecords == nil {
 		f, err := os.Open("../data/lab_5_var_12.csv")
 		if err != nil {
@@ -81,7 +81,7 @@ func RenderTesterSalary(req *common.RenderRequest) (res *common.RenderResponse) 
 		x[i] = min_salary + bucket_size*float64(i+1)
 	}
 
-	copyChart := common.CopyChart(TesterSalaryChart)
+	copyChart := charting.CopyChart(TesterSalaryChart)
 	copyChart.UpdateDataForDataset(TesterSalaryBarGraphID, buckets)
 
 	copyChart.Labels = make([]string, len(buckets))
@@ -89,7 +89,7 @@ func RenderTesterSalary(req *common.RenderRequest) (res *common.RenderResponse) 
 		copyChart.Labels[i] = fmt.Sprintf("%.0f-%.0f", x[i], x[i]+bucket_size)
 	}
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(TesterSalaryBarChartID, &copyChart)
 	return res
 }

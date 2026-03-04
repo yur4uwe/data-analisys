@@ -2,7 +2,7 @@ package visualization
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"math"
 )
 
@@ -17,56 +17,56 @@ const (
 )
 
 var (
-	VariableStart = common.MutableField{
+	VariableStart = charting.MutableField{
 		ID:      VariableStartID,
 		Label:   "Interval Start",
 		Default: -5.0,
 		Min:     -100.0,
 		Max:     100.0,
 		Step:    0.1,
-		Control: common.ControlNumber,
+		Control: charting.ControlNumber,
 	}
-	VariableEnd = common.MutableField{
+	VariableEnd = charting.MutableField{
 		ID:      VariableEndID,
 		Label:   "Interval End",
 		Default: 5.0,
 		Min:     -100.0,
 		Max:     100.0,
 		Step:    0.1,
-		Control: common.ControlNumber,
+		Control: charting.ControlNumber,
 	}
-	VariableStep = common.MutableField{
+	VariableStep = charting.MutableField{
 		ID:      VariableStepID,
 		Label:   "Step Size",
 		Default: 0.1,
 		Min:     0.1,
 		Max:     10.0,
 		Step:    0.1,
-		Control: common.ControlRange,
+		Control: charting.ControlRange,
 	}
 
-	FunctionChart = common.Chart{
+	FunctionChart = charting.Chart{
 		ID:          FunctionChartID,
 		Title:       "Function Representation",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
-		XAxisConfig: common.LinearAxis,
-		YAxisConfig: common.LinearAxis,
-		ChartVariables: []common.MutableField{
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		ChartVariables: []charting.MutableField{
 			VariableStart,
 			VariableEnd,
 			VariableStep,
 		},
-		Datasets: map[string]*common.ChartDataset{
+		Datasets: map[string]*charting.ChartDataset{
 			FunctionGraphID: &FunctionGraph,
 		},
 	}
 
-	FunctionGraph = common.ChartDataset{
+	FunctionGraph = charting.ChartDataset{
 		Label:           "Function cos(x)*e^(-(|x|)) Graph",
-		BorderColor:     common.Color1,
-		BackgroundColor: []string{common.ColorTransparent},
+		BorderColor:     charting.Color1,
+		BackgroundColor: []string{charting.ColorTransparent},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
@@ -80,7 +80,7 @@ func f(x float64) float64 {
 	return math.Cos(x) * math.Exp(-math.Abs(x))
 }
 
-func RenderFunction(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderFunction(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	fmt.Printf("Rendering %s\n", req.ChartID)
 	start, ok := req.GetChartVariable(FunctionChartID, VariableStartID)
 	if !ok {
@@ -125,10 +125,10 @@ func RenderFunction(req *common.RenderRequest) (res *common.RenderResponse) {
 		y = append(y, f(xVal))
 	}
 
-	chartCopy := common.CopyChart(FunctionChart)
+	chartCopy := charting.CopyChart(FunctionChart)
 	chartCopy.UpdatePointsForDataset(FunctionGraphID, x, y)
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(FunctionChartID, &chartCopy)
 
 	return res

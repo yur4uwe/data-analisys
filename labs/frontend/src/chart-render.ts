@@ -1,5 +1,5 @@
 import { Chart, ChartTypeRegistry } from "chart.js";
-import { common } from "../wailsjs/go/models";
+import { charting } from "../wailsjs/go/models";
 
 // Store chart instances globally for access
 declare global {
@@ -12,7 +12,7 @@ if (!window.chartInstances) {
   window.chartInstances = new Map();
 }
 
-export function renderChart(chartConfig: common.Chart) {
+export function renderChart(chartConfig: charting.Chart) {
   let container = document.getElementById("chart-container");
   if (!container) {
     container = document.createElement("div");

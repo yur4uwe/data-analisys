@@ -1,7 +1,7 @@
 package visualization
 
 import (
-	"labs/labs/common"
+	"labs/charting"
 )
 
 const (
@@ -9,9 +9,9 @@ const (
 )
 
 var (
-	Config = common.LabConfig{
+	Config = charting.LabConfig{
 		Lab: Metadata,
-		Charts: map[string]*common.Chart{
+		Charts: map[string]*charting.Chart{
 			BarChartID:      &BarChart,
 			FunctionChartID: &FunctionChart,
 			LinearChartID:   &LinearChart,
@@ -19,10 +19,10 @@ var (
 		},
 	}
 
-	Metadata = common.LabMetadata{
+	Metadata = charting.LabMetadata{
 		ID:   LabID,
 		Name: "Visualization",
-		Charts: map[string]common.ChartMetadata{
+		Charts: map[string]charting.ChartMetadata{
 			BarChartID:      BarMeta,
 			FunctionChartID: FunctionMeta,
 			LinearChartID:   LinearMeta,

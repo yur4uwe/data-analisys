@@ -4,32 +4,32 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 )
 
 // Consider rewriting storing logic, as some variable can have too maky of
 // commbinations, and we can end up with a very large cache. Maybe we can store only some variables,
 // or use a more efficient way to generate the key
 type ResponseCache struct {
-	outcoming map[string]*common.RenderResponse
-	incoming  map[string]*common.RenderRequest
+	outcoming map[string]*charting.RenderResponse
+	incoming  map[string]*charting.RenderRequest
 }
 
 func NewResponseCache() *ResponseCache {
 	return &ResponseCache{
-		outcoming: make(map[string]*common.RenderResponse),
-		incoming:  make(map[string]*common.RenderRequest),
+		outcoming: make(map[string]*charting.RenderResponse),
+		incoming:  make(map[string]*charting.RenderRequest),
 	}
 }
 
 // generateCacheKey creates a hash of the entire request to account for all variables
-func (rc *ResponseCache) generateCacheKey(req *common.RenderRequest) string {
+func (rc *ResponseCache) generateCacheKey(req *charting.RenderRequest) string {
 	jsonData, _ := json.Marshal(req)
 	hash := md5.Sum(jsonData)
 	return fmt.Sprintf("%x", hash)
 }
 
-func (rc *ResponseCache) GetResponse(req *common.RenderRequest) (*common.RenderResponse, bool) {
+func (rc *ResponseCache) GetResponse(req *charting.RenderRequest) (*charting.RenderResponse, bool) {
 	if req == nil {
 		return nil, false
 	}
@@ -40,7 +40,7 @@ func (rc *ResponseCache) GetResponse(req *common.RenderRequest) (*common.RenderR
 	return nil, false
 }
 
-func (rc *ResponseCache) StoreResponse(req *common.RenderRequest, res *common.RenderResponse) {
+func (rc *ResponseCache) StoreResponse(req *charting.RenderRequest, res *charting.RenderResponse) {
 	if req == nil || res == nil {
 		return
 	}
@@ -50,6 +50,6 @@ func (rc *ResponseCache) StoreResponse(req *common.RenderRequest, res *common.Re
 }
 
 func (rc *ResponseCache) Clear() {
-	rc.outcoming = make(map[string]*common.RenderResponse)
-	rc.incoming = make(map[string]*common.RenderRequest)
+	rc.outcoming = make(map[string]*charting.RenderResponse)
+	rc.incoming = make(map[string]*charting.RenderRequest)
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/render"
 	"math"
 	"os"
@@ -25,60 +25,60 @@ const (
 )
 
 var (
-	approxDegreeVariable = common.MutableField{
+	approxDegreeVariable = charting.MutableField{
 		ID:      approximationDegree,
 		Label:   "Degree of Polynomial",
 		Default: 1,
 		Min:     0,
 		Max:     10,
 		Step:    1,
-		Control: common.ControlRange,
+		Control: charting.ControlRange,
 	}
 
-	coeffsDisplayVariable = common.MutableField{
+	coeffsDisplayVariable = charting.MutableField{
 		ID:      coeffsDisplayID,
 		Label:   "Polynomial coefficients: ",
-		Control: common.ControlNoControl,
+		Control: charting.ControlNoControl,
 	}
 
-	sampleDataGraph = common.ChartDataset{
+	sampleDataGraph = charting.ChartDataset{
 		Label:           "Sample Data",
-		BorderColor:     common.Color10,
+		BorderColor:     charting.Color10,
 		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables:  []common.MutableField{},
+		GraphVariables:  []charting.MutableField{},
 	}
 
-	sampleDataApproxGraph = common.ChartDataset{
+	sampleDataApproxGraph = charting.ChartDataset{
 		Label:           "Sample Data Approximation",
-		BorderColor:     common.Color6,
+		BorderColor:     charting.Color6,
 		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
 		BorderWidth:     2,
 		PointRadius:     0,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables: []common.MutableField{
+		GraphVariables: []charting.MutableField{
 			approxDegreeVariable,
 			coeffsDisplayVariable,
 		},
 	}
 
-	SampleDataChart = common.Chart{
+	SampleDataChart = charting.Chart{
 		ID:          SampleDataID,
 		Title:       "Sample Data (CSV)",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
-		XAxisConfig: common.LinearAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			OriginalDataID:             &sampleDataGraph,
 			sampleApproximationGraphID: &sampleDataApproxGraph,
 		},
-		ChartVariables: []common.MutableField{},
+		ChartVariables: []charting.MutableField{},
 	}
 
 	SampleDataMetadata = SampleDataChart.Meta()
@@ -92,16 +92,16 @@ func sortXandY(x, y []float64) {
 	})
 }
 
-func RenderSampleData(req *common.RenderRequest) *common.RenderResponse {
+func RenderSampleData(req *charting.RenderRequest) *charting.RenderResponse {
 	x, y, err := ReadSampleCSV("../data/lab_3_var_12.csv")
 	if err != nil {
 		fmt.Println("failed to open file:", err)
-		return &common.RenderResponse{
+		return &charting.RenderResponse{
 			Error: render.NewRenderError("failed to read sample data file"),
 		}
 	}
 
-	chartCopy := common.CopyChart(SampleDataChart)
+	chartCopy := charting.CopyChart(SampleDataChart)
 	chartCopy.UpdatePointsForDataset(OriginalDataID, x, y)
 
 	degree, ok := req.GetGraphVariable(SampleDataID, sampleApproximationGraphID, approximationDegree)
@@ -111,7 +111,7 @@ func RenderSampleData(req *common.RenderRequest) *common.RenderResponse {
 
 	coeffs, err := SolvePolynomialFit(x, y, int(degree))
 	if err != nil {
-		return &common.RenderResponse{
+		return &charting.RenderResponse{
 			Error: render.NewRenderErrorf("failed to solve polynomial fit: %v", err),
 		}
 	}
@@ -142,8 +142,8 @@ func RenderSampleData(req *common.RenderRequest) *common.RenderResponse {
 	str.WriteString(")")
 	chartCopy.Datasets[sampleApproximationGraphID].GraphVariables[1].Label = str.String()
 
-	return &common.RenderResponse{
-		Charts: map[string]common.Chart{
+	return &charting.RenderResponse{
+		Charts: map[string]charting.Chart{
 			SampleDataID: chartCopy,
 		},
 	}

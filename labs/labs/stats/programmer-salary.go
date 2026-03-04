@@ -2,7 +2,7 @@ package stats
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/uncsv"
 	"math"
 	"os"
@@ -15,22 +15,22 @@ const (
 )
 
 var (
-	ProgrammerSalaryGraph = common.ChartDataset{
+	ProgrammerSalaryGraph = charting.ChartDataset{
 		Label:           "Programmer Salary",
-		BackgroundColor: []string{common.Color3, common.Color4, common.Color5, common.Color6, common.Color7},
+		BackgroundColor: []string{charting.Color3, charting.Color4, charting.Color5, charting.Color6, charting.Color7},
 		PointRadius:     0,
 		ShowLine:        true,
 	}
 
-	ProgrammerSalaryChart = common.Chart{
+	ProgrammerSalaryChart = charting.Chart{
 		ID:          ProgrammerSalaryBarChartID,
 		Title:       "Programmer Salary",
-		Type:        common.ChartTypeBar,
+		Type:        charting.ChartTypeBar,
 		XAxisLabel:  "amount, $",
-		XAxisConfig: common.LinearAxis,
+		XAxisConfig: charting.LinearAxis,
 		YAxisLabel:  "people, n",
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			ProgrammerSalaryBarGraphID: &ProgrammerSalaryGraph,
 		},
 	}
@@ -40,7 +40,7 @@ var (
 	salaryRecords = (*SalaryRecord)(nil)
 )
 
-func RenderProgrammerSalary(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderProgrammerSalary(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	if salaryRecords == nil {
 		f, err := os.Open("../data/lab_5_var_12.csv")
 		if err != nil {
@@ -82,7 +82,7 @@ func RenderProgrammerSalary(req *common.RenderRequest) (res *common.RenderRespon
 		x[i] = min_salary + bucket_size*float64(i+1)
 	}
 
-	copyChart := common.CopyChart(ProgrammerSalaryChart)
+	copyChart := charting.CopyChart(ProgrammerSalaryChart)
 	copyChart.UpdateDataForDataset(ProgrammerSalaryBarGraphID, buckets)
 
 	copyChart.Labels = make([]string, len(buckets))
@@ -90,7 +90,7 @@ func RenderProgrammerSalary(req *common.RenderRequest) (res *common.RenderRespon
 		copyChart.Labels[i] = fmt.Sprintf("%.0f-%.0f", x[i], x[i]+bucket_size)
 	}
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(ProgrammerSalaryBarChartID, &copyChart)
 	return res
 }

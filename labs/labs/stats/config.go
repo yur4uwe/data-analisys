@@ -2,7 +2,7 @@ package stats
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/uncsv"
 	"math"
 	"math/rand/v2"
@@ -13,10 +13,10 @@ const (
 )
 
 var (
-	Config = common.NewLabConfig(
+	Config = charting.NewLabConfig(
 		LabID,
 		"Statistical Analysis",
-		map[string]*common.Chart{
+		map[string]*charting.Chart{
 			RandomSequenceChartID:        &RandomSequenceChart,
 			CorrelationChartID:           &CorrelationChart,
 			ProgrammerSalaryBarChartID:   &ProgrammerSalaryChart,

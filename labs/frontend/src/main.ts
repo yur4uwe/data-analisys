@@ -5,7 +5,7 @@ import { ActiveLabChangeEvent } from "./events";
 import { createLabTabs, updateAllFieldLabels } from "./lab-init";
 
 import { GetLabs } from "../wailsjs/go/main/App";
-import { common } from "../wailsjs/go/models";
+import { charting } from "../wailsjs/go/models";
 import { Chart, registerables } from "chart.js";
 import { EventsOn } from "../wailsjs/runtime";
 import { renderChart } from "./chart-render";
@@ -34,7 +34,7 @@ window.addEventListener("load", () => {
   });
 });
 
-EventsOn("renderComplete", (data: common.RenderResponse) => {
+EventsOn("renderComplete", (data: charting.RenderResponse) => {
   console.log("Render complete:", data);
   if (data.error) {
     console.error("Render error:", data.error);
@@ -54,7 +54,7 @@ EventsOn("renderComplete", (data: common.RenderResponse) => {
 });
 
 // Listen for render errors
-EventsOn("renderError", (data: common.RenderResponse) => {
+EventsOn("renderError", (data: charting.RenderResponse) => {
   console.error("Render error:", data);
   const container = document.getElementById("error-container");
   if (container) {

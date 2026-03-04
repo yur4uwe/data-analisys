@@ -2,7 +2,7 @@ package visualization
 
 import (
 	"fmt"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/uncsv"
 	"os"
 )
@@ -14,9 +14,9 @@ const (
 )
 
 var (
-	LinearGraph = common.ChartDataset{
+	LinearGraph = charting.ChartDataset{
 		Label:           "Revenue $",
-		BorderColor:     common.Color1,
+		BorderColor:     charting.Color1,
 		BackgroundColor: []string{"rgba(37, 99, 235, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,
@@ -24,15 +24,15 @@ var (
 		Togglable:       true,
 	}
 
-	LinearChart = common.Chart{
+	LinearChart = charting.Chart{
 		ID:          LinearChartID,
 		Title:       "Revenue Per Day",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "Day №",
 		YAxisLabel:  "Revenue $",
-		XAxisConfig: common.LinearAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			LinearGraphID: &LinearGraph,
 		},
 	}
@@ -45,7 +45,7 @@ type DailyRevenue struct {
 	Revenue []float64 `csv:"Прибуток (грн)"`
 }
 
-func RenderLinear(req *common.RenderRequest) (res *common.RenderResponse) {
+func RenderLinear(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	fmt.Printf("Rendering %s\n", req.ChartID)
 	f, err := os.Open("../data/lab_4_var_12_revenue_per_day.csv")
 	if err != nil {
@@ -60,14 +60,14 @@ func RenderLinear(req *common.RenderRequest) (res *common.RenderResponse) {
 		return res.NewErrorf("error while decoding csv: %v", err)
 	}
 
-	chartCopy := common.CopyChart(LinearChart)
+	chartCopy := charting.CopyChart(LinearChart)
 	if err := chartCopy.UpdateDataForDataset(LinearGraphID, rec.Revenue); err != nil {
 		return res.NewErrorf("error while updating chart dataset: %v", err)
 	}
 
 	chartCopy.Labels = rec.Day
 
-	res = common.NewRenderResponse()
+	res = charting.NewRenderResponse()
 	res.AddChart(LinearChartID, &chartCopy)
 	return res
 }

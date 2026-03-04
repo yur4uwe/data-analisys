@@ -1,7 +1,7 @@
 package labs
 
 import (
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/visualization"
 )
 
@@ -11,18 +11,18 @@ func NewLab4() *Lab4Provider {
 
 type Lab4Provider struct{}
 
-var _ common.LabProvider = Lab4Provider{}
+var _ charting.LabProvider = Lab4Provider{}
 
-func (lp Lab4Provider) GetMetadata() common.LabMetadata {
+func (lp Lab4Provider) GetMetadata() charting.LabMetadata {
 	return visualization.Metadata
 }
 
-func (lp Lab4Provider) GetConfig() common.LabConfig {
+func (lp Lab4Provider) GetConfig() charting.LabConfig {
 	return visualization.Config
 }
 
-func (lp Lab4Provider) Render(req *common.RenderRequest) *common.RenderResponse {
-	res := &common.RenderResponse{}
+func (lp Lab4Provider) Render(req *charting.RenderRequest) *charting.RenderResponse {
+	res := &charting.RenderResponse{}
 	if req == nil {
 		return res.NewError("request is nil")
 	}

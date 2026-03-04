@@ -1,4 +1,4 @@
-import { common } from "../wailsjs/go/models";
+import { charting } from "../wailsjs/go/models";
 import { toggleDatasetVisibility } from "./chart-render";
 import {
   ActiveChartChangeEvent,
@@ -19,7 +19,7 @@ export function buildInputFieldName(
 }
 
 function CreateInput(
-  field: common.MutableField,
+  field: charting.MutableField,
   parentElement: HTMLElement,
   chartId: string,
   graphId: string | null = null,
@@ -57,7 +57,7 @@ function CreateInput(
   parentElement.appendChild(input);
 }
 
-export function updateAllFieldLabels(chart: common.Chart) {
+export function updateAllFieldLabels(chart: charting.Chart) {
   if (!chart || !chart.chartVariables) {
     return;
   }
@@ -66,7 +66,7 @@ export function updateAllFieldLabels(chart: common.Chart) {
 
   const changeLabel =
     (chartId: string, graphId: string | null) =>
-    (field: common.MutableField) => {
+    (field: charting.MutableField) => {
       const inputId = buildInputFieldName(chartId, graphId, field.id);
       const input = document.getElementById(inputId) as HTMLInputElement;
       const label = document.querySelector(
@@ -242,7 +242,7 @@ export function InitializeChart(chartId: string) {
 }
 
 // Create lab tabs (call once with all labs)
-export function createLabTabs(labsMetadata: common.LabMetadata[]) {
+export function createLabTabs(labsMetadata: charting.LabMetadata[]) {
   let labList = document.getElementById("lab-list");
   if (!labList) {
     labList = document.createElement("ul");

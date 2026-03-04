@@ -1,7 +1,7 @@
 package labs
 
 import (
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/render"
 	"math"
 	"math/rand/v2"
@@ -26,15 +26,15 @@ const (
 )
 
 var (
-	metadata = common.LabMetadata{
+	metadata = charting.LabMetadata{
 		ID:   Lab2ID,
 		Name: "Primary data processing",
-		Charts: map[string]common.ChartMetadata{
+		Charts: map[string]charting.ChartMetadata{
 			mainChartID: {
 				ID:             mainChartID,
 				Title:          "Primary data processing",
 				ChartVariables: ChartVariables,
-				GraphVariables: map[string][]common.MutableField{
+				GraphVariables: map[string][]charting.MutableField{
 					originalDataID:                originalData.GraphVariables,
 					noiseDataID:                   noisyData.GraphVariables,
 					recurringAverageID:            recurrentAvg.GraphVariables,
@@ -44,7 +44,7 @@ var (
 			},
 		},
 	}
-	ChartVariables = []common.MutableField{
+	ChartVariables = []charting.MutableField{
 		{
 			ID:      intervalStartID,
 			Label:   "Start",
@@ -52,7 +52,7 @@ var (
 			Min:     -100.0,
 			Max:     100.0,
 			Step:    1,
-			Control: common.ControlNumber,
+			Control: charting.ControlNumber,
 		},
 		{
 			ID:      intervalEndID,
@@ -61,7 +61,7 @@ var (
 			Min:     -100.0,
 			Max:     100.0,
 			Step:    1,
-			Control: common.ControlNumber,
+			Control: charting.ControlNumber,
 		},
 		{
 			ID:      intervalStepID,
@@ -70,10 +70,10 @@ var (
 			Min:     0.1,
 			Max:     1,
 			Step:    0.1,
-			Control: common.ControlRange,
+			Control: charting.ControlRange,
 		},
 	}
-	originalData = common.ChartDataset{
+	originalData = charting.ChartDataset{
 		Label:           "Original",
 		Data:            nil,
 		BorderColor:     "#2563eb", // Blue
@@ -85,9 +85,9 @@ var (
 		BorderWidth:     2,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables:  []common.MutableField{},
+		GraphVariables:  []charting.MutableField{},
 	}
-	noisyData = common.ChartDataset{
+	noisyData = charting.ChartDataset{
 		Label:           "Noisy",
 		Data:            nil,
 		BorderColor:     "#dc2626", // Red
@@ -99,7 +99,7 @@ var (
 		BorderWidth:     1,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables: []common.MutableField{
+		GraphVariables: []charting.MutableField{
 			{
 				ID:      noiseAmplifierID,
 				Label:   "Noise Amplifier",
@@ -107,11 +107,11 @@ var (
 				Min:     0.0,
 				Max:     100.0,
 				Step:    1,
-				Control: common.ControlRange,
+				Control: charting.ControlRange,
 			},
 		},
 	}
-	recurrentAvg = common.ChartDataset{
+	recurrentAvg = charting.ChartDataset{
 		Label:           "Recurrent Average",
 		Data:            nil,
 		BorderColor:     "#16a34a", // Green
@@ -123,9 +123,9 @@ var (
 		BorderWidth:     2,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables:  []common.MutableField{},
+		GraphVariables:  []charting.MutableField{},
 	}
-	slidingWindowAvg = common.ChartDataset{
+	slidingWindowAvg = charting.ChartDataset{
 		Label:           "Sliding Window Average",
 		Data:            nil,
 		BorderColor:     "#9333ea", // Purple
@@ -137,7 +137,7 @@ var (
 		BorderWidth:     2,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables: []common.MutableField{
+		GraphVariables: []charting.MutableField{
 			{
 				ID:      windowSizeID,
 				Label:   "Window Size",
@@ -145,11 +145,11 @@ var (
 				Min:     1,
 				Max:     100,
 				Step:    1,
-				Control: common.ControlNumber,
+				Control: charting.ControlNumber,
 			},
 		},
 	}
-	exponentialAverage = common.ChartDataset{
+	exponentialAverage = charting.ChartDataset{
 		Label:           "Exponential Average",
 		Data:            nil,
 		BorderColor:     "#ea580c", // Orange
@@ -161,7 +161,7 @@ var (
 		BorderWidth:     3,
 		ShowLine:        true,
 		Togglable:       true,
-		GraphVariables: []common.MutableField{
+		GraphVariables: []charting.MutableField{
 			{
 				ID:      alphaID,
 				Label:   "Alpha",
@@ -169,19 +169,19 @@ var (
 				Min:     0,
 				Max:     1,
 				Step:    0.01,
-				Control: common.ControlRange,
+				Control: charting.ControlRange,
 			},
 		},
 	}
-	main = common.Chart{
+	main = charting.Chart{
 		ID:          mainChartID,
 		Title:       "Primary Data Processing Methods Visualization",
-		Type:        common.ChartTypeLine,
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "X",
 		YAxisLabel:  "Y",
-		XAxisConfig: common.LinearAxis,
-		YAxisConfig: common.LinearAxis,
-		Datasets: map[string]*common.ChartDataset{
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]*charting.ChartDataset{
 			originalDataID:                &originalData,
 			noiseDataID:                   &noisyData,
 			recurringAverageID:            &recurrentAvg,
@@ -211,17 +211,17 @@ func exponentialAvg(x, prevAvg float64, alpha float64) float64 {
 type Lab2Provider struct {
 }
 
-var _ common.LabProvider = Lab2Provider{}
+var _ charting.LabProvider = Lab2Provider{}
 
 func NewLab2() *Lab2Provider {
 	return &Lab2Provider{}
 }
 
-func (lp Lab2Provider) GetMetadata() common.LabMetadata {
+func (lp Lab2Provider) GetMetadata() charting.LabMetadata {
 	return metadata
 }
 
-func (lp Lab2Provider) Render(req *common.RenderRequest) *common.RenderResponse {
+func (lp Lab2Provider) Render(req *charting.RenderRequest) *charting.RenderResponse {
 	interval_start, has_start := req.GetChartVariable(mainChartID, intervalStartID)
 	interval_end, has_end := req.GetChartVariable(mainChartID, intervalEndID)
 	interval_step, has_step := req.GetChartVariable(mainChartID, intervalStepID)
@@ -242,12 +242,12 @@ func (lp Lab2Provider) Render(req *common.RenderRequest) *common.RenderResponse 
 
 	// Validate input parameters
 	if interval_step <= 0 {
-		return &common.RenderResponse{
+		return &charting.RenderResponse{
 			Error: render.NewRenderError("step must be greater than 0"),
 		}
 	}
 	if interval_start > interval_end {
-		return &common.RenderResponse{
+		return &charting.RenderResponse{
 			Error: render.NewRenderError("start interval must be less than or equal to end interval"),
 		}
 	}
@@ -269,20 +269,20 @@ func (lp Lab2Provider) Render(req *common.RenderRequest) *common.RenderResponse 
 
 	// Check if we have data to work with
 	if len(origY) == 0 {
-		return &common.RenderResponse{
+		return &charting.RenderResponse{
 			Error: render.NewRenderError("no data generated with given parameters"),
 		}
 	}
 
 	// Deep copy the chart template and update only the data
-	chartCopy := common.CopyChart(main)
+	chartCopy := charting.CopyChart(main)
 
 	// Helper function to update dataset with point data (x, y pairs)
 	updateDatasetWithPoints := func(key string, xData, yData []float64) {
 		dataset := chartCopy.Datasets[key]
-		pointData := make([]common.DataPoint, len(yData))
+		pointData := make([]charting.DataPoint, len(yData))
 		for i := range yData {
-			pointData[i] = common.DataPoint{X: xData[i], Y: yData[i]}
+			pointData[i] = charting.DataPoint{X: xData[i], Y: yData[i]}
 		}
 		dataset.PointData = pointData
 		chartCopy.Datasets[key] = dataset
@@ -330,17 +330,17 @@ func (lp Lab2Provider) Render(req *common.RenderRequest) *common.RenderResponse 
 	}
 	updateDatasetWithPoints(exponentialSmoothingAverageID, x, expAvg)
 
-	return &common.RenderResponse{
-		Charts: map[string]common.Chart{
+	return &charting.RenderResponse{
+		Charts: map[string]charting.Chart{
 			mainChartID: chartCopy,
 		},
 	}
 }
 
-func (lp Lab2Provider) GetConfig() common.LabConfig {
-	return common.LabConfig{
+func (lp Lab2Provider) GetConfig() charting.LabConfig {
+	return charting.LabConfig{
 		Lab: metadata,
-		Charts: map[string]*common.Chart{
+		Charts: map[string]*charting.Chart{
 			mainChartID: &main,
 		},
 	}

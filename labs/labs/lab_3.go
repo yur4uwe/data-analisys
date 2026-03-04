@@ -1,26 +1,26 @@
 package labs
 
 import (
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/polyapprox"
 	"labs/labs/render"
 )
 
 type Lab3Provider struct{}
 
-var _ common.LabProvider = Lab3Provider{}
+var _ charting.LabProvider = Lab3Provider{}
 
 func NewLab3() *Lab3Provider {
 	return &Lab3Provider{}
 }
 
-func (lp Lab3Provider) GetMetadata() common.LabMetadata {
+func (lp Lab3Provider) GetMetadata() charting.LabMetadata {
 	return polyapprox.Metadata
 }
 
-func (lp Lab3Provider) Render(req *common.RenderRequest) *common.RenderResponse {
+func (lp Lab3Provider) Render(req *charting.RenderRequest) *charting.RenderResponse {
 	if req == nil {
-		return &common.RenderResponse{Error: render.NewRenderError("empty render request")}
+		return &charting.RenderResponse{Error: render.NewRenderError("empty render request")}
 	}
 
 	switch req.ChartID {
@@ -33,14 +33,14 @@ func (lp Lab3Provider) Render(req *common.RenderRequest) *common.RenderResponse 
 	case polyapprox.SampleMSEID:
 		return polyapprox.RenderSamplePolynomialMSE(req)
 	default:
-		return &common.RenderResponse{Error: render.NewRenderErrorf("unrecognised Chart: %s", req.ChartID)}
+		return &charting.RenderResponse{Error: render.NewRenderErrorf("unrecognised Chart: %s", req.ChartID)}
 	}
 }
 
-func (lp Lab3Provider) GetConfig() common.LabConfig {
-	return common.LabConfig{
+func (lp Lab3Provider) GetConfig() charting.LabConfig {
+	return charting.LabConfig{
 		Lab: polyapprox.Metadata,
-		Charts: map[string]*common.Chart{
+		Charts: map[string]*charting.Chart{
 			polyapprox.RandomFitsID: &polyapprox.RandomFitsChart,
 			polyapprox.SampleDataID: &polyapprox.SampleDataChart,
 			polyapprox.RandomMSEID:  &polyapprox.RandomMSEChart,

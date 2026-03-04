@@ -1,28 +1,28 @@
 package labs
 
 import (
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/stats"
 )
 
 type Lab5Provider struct{}
 
-var _ common.LabProvider = Lab5Provider{}
+var _ charting.LabProvider = Lab5Provider{}
 
 func NewLab5() *Lab5Provider {
 	return &Lab5Provider{}
 }
 
-func (lp Lab5Provider) GetMetadata() common.LabMetadata {
+func (lp Lab5Provider) GetMetadata() charting.LabMetadata {
 	return stats.Metadata
 }
 
-func (lp Lab5Provider) GetConfig() common.LabConfig {
+func (lp Lab5Provider) GetConfig() charting.LabConfig {
 	return stats.Config
 }
 
-func (lp Lab5Provider) Render(req *common.RenderRequest) *common.RenderResponse {
-	res := &common.RenderResponse{}
+func (lp Lab5Provider) Render(req *charting.RenderRequest) *charting.RenderResponse {
+	res := &charting.RenderResponse{}
 	if req == nil {
 		return res.NewError("request is nil")
 	}

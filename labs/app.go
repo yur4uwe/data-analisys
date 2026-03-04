@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"labs/labs"
-	"labs/labs/common"
+	"labs/charting"
 	"labs/labs/polyapprox"
 	"labs/labs/render"
 	"labs/labs/stats"
@@ -15,19 +15,19 @@ import (
 )
 
 // LabFactory is a function that creates a lab provider on demand
-type LabFactory func() common.LabProvider
+type LabFactory func() charting.LabProvider
 
 // App struct
 type App struct {
 	ctx      context.Context
-	registry map[string]common.LabProvider
+	registry map[string]charting.LabProvider
 	cache    *ResponseCache
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{
-		registry: make(map[string]common.LabProvider),
+		registry: make(map[string]charting.LabProvider),
 	}
 }
 
@@ -46,8 +46,8 @@ func (a *App) startup(ctx context.Context) {
 	fmt.Printf("Registered %d labs (lazy initialization)\n", len(a.registry))
 }
 
-func (a *App) GetLabs() common.GetLabsResponse {
-	resp := common.GetLabsResponse{}
+func (a *App) GetLabs() charting.GetLabsResponse {
+	resp := charting.GetLabsResponse{}
 	for labID := range a.registry {
 		// Get metadata without initializing the full lab
 		resp.Labs = append(resp.Labs, a.registry[labID].GetMetadata())
@@ -56,7 +56,7 @@ func (a *App) GetLabs() common.GetLabsResponse {
 }
 
 // GetLabConfig returns the configuration for a specific lab
-func (a *App) GetLabConfig(labID string) (*common.LabConfig, error) {
+func (a *App) GetLabConfig(labID string) (*charting.LabConfig, error) {
 	provider, ok := a.registry[labID]
 	if !ok {
 		return nil, fmt.Errorf("lab %q not found", labID)
@@ -66,7 +66,7 @@ func (a *App) GetLabConfig(labID string) (*common.LabConfig, error) {
 }
 
 // Render processes the render request asynchronously to avoid blocking the GTK main loop
-func (a *App) Render(req *common.RenderRequest) {
+func (a *App) Render(req *charting.RenderRequest) {
 	if req == nil {
 		runtime.EventsEmit(a.ctx, "renderError", render.NewRenderError("request is nil"))
 		return
@@ -97,22 +97,22 @@ func (a *App) Render(req *common.RenderRequest) {
 
 // RenderSync renders synchronously and returns the response directly
 // This ensures RenderResponse is exported to TypeScript
-func (a *App) RenderSync(req *common.RenderRequest) common.RenderResponse {
+func (a *App) RenderSync(req *charting.RenderRequest) charting.RenderResponse {
 	provider, ok := a.registry[req.LabID]
 	if !ok {
-		return common.RenderResponse{
+		return charting.RenderResponse{
 			Error: render.NewRenderError(fmt.Sprintf("lab %q not found", req.LabID)),
 		}
 	}
 
 	result := provider.Render(req)
 	if result.Error != nil {
-		return common.RenderResponse{
+		return charting.RenderResponse{
 			Error: render.NewRenderError(fmt.Sprintf("failed to render lab %q: %v", req.LabID, result.Error)),
 		}
 	}
 
-	return common.RenderResponse{
+	return charting.RenderResponse{
 		Charts: result.Charts,
 	}
 }

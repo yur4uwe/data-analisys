@@ -1,4 +1,4 @@
-package common
+package charting
 
 // LabMetadata contains information about a single lab
 type LabMetadata struct {
