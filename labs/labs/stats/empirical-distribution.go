@@ -54,30 +54,24 @@ func RenderEmpiricalDistribution(req *charting.RenderRequest) (res *charting.Ren
 		}
 	}
 
-	// Get all salary values
 	salaries := make([]float64, len(salaryRecords.Salary))
 	copy(salaries, salaryRecords.Salary)
 
-	// Sort salaries for EDF calculation
+	// Sort salaries for easier cumulative probability calculation
 	sort.Float64s(salaries)
 
 	n := float64(len(salaries))
 
-	// Create points for the empirical distribution function
-	// F(x) = n_x / n, where n_x is the number of values less than x
 	x := make([]float64, 0)
 	y := make([]float64, 0)
 
-	// Add starting point (minimum value has F(x) = 0 just before it)
+	// Add 0 value for cumulative probability before first salary
 	if len(salaries) > 0 {
 		x = append(x, salaries[0]-1)
 		y = append(y, 0)
 	}
 
-	// For each salary value, calculate F(x)
-	// Since salaries are sorted, the index+1 gives us the count of values <= current value
 	for i, salary := range salaries {
-		// F(x) = (number of values <= x) / total count
 		fx := float64(i+1) / n
 		x = append(x, salary)
 		y = append(y, fx)

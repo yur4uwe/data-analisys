@@ -172,6 +172,7 @@ label {
     font-size: 13px;
     font-weight: 500;
     display: block;
+    white-space: pre-wrap;
 }
 
 /* Input Styling */

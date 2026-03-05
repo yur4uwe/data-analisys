@@ -12,9 +12,17 @@ const (
 	ProgrammerSalaryBarChartID   = "programmer-salary"
 	ProgrammerSalaryBarGraphID   = "programmer-salary"
 	EmpyricalDestributionChartID = "distribution"
+
+	DisplayProgrammerSalaryStatsID = "programmer-salary-stats"
 )
 
 var (
+	ProgrammerSalaryStats = charting.MutableField{
+		ID:      DisplayProgrammerSalaryStatsID,
+		Control: charting.ControlNoControl,
+		Label:   "Programmer salary statistics",
+	}
+
 	ProgrammerSalaryGraph = charting.ChartDataset{
 		Label:           "Programmer Salary",
 		BackgroundColor: []string{charting.Color3, charting.Color4, charting.Color5, charting.Color6, charting.Color7},
@@ -32,6 +40,9 @@ var (
 		YAxisConfig: charting.LinearAxis,
 		Datasets: map[string]*charting.ChartDataset{
 			ProgrammerSalaryBarGraphID: &ProgrammerSalaryGraph,
+		},
+		ChartVariables: []charting.MutableField{
+			ProgrammerSalaryStats,
 		},
 	}
 
@@ -56,21 +67,18 @@ func RenderProgrammerSalary(req *charting.RenderRequest) (res *charting.RenderRe
 		}
 	}
 
+	salaries := salariesFor(Programmer)
 	buckets := make([]float64, 5)
 	min_salary := math.Inf(1)
 	max_salary := math.Inf(-1)
-	for i := range salaryRecords.ID {
-		min_salary = math.Min(min_salary, salaryRecords.Salary[i])
-		max_salary = math.Max(max_salary, salaryRecords.Salary[i])
+	for i := range salaries {
+		min_salary = math.Min(min_salary, salaries[i])
+		max_salary = math.Max(max_salary, salaries[i])
 	}
 
 	bucket_size := (max_salary - min_salary) / float64(len(buckets))
-	for i := range salaryRecords.ID {
-		if salaryRecords.Position[i] != Programmer {
-			continue
-		}
-
-		bucket_index := int((salaryRecords.Salary[i] - min_salary) / bucket_size)
+	for _, salary := range salaries {
+		bucket_index := int((salary - min_salary) / bucket_size)
 		if bucket_index >= len(buckets) {
 			bucket_index = len(buckets) - 1
 		}
@@ -89,6 +97,16 @@ func RenderProgrammerSalary(req *charting.RenderRequest) (res *charting.RenderRe
 	for i := range buckets {
 		copyChart.Labels[i] = fmt.Sprintf("%.0f-%.0f", x[i], x[i]+bucket_size)
 	}
+
+	avg := CalculateMean(salaries)
+	median := CalculateMedian(salaries)
+	stddev := CalculateStdDev(salaries, avg)
+	variance := CalculateVariance(salaries, avg)
+
+	copyChart.ChartVariables[0].Label = fmt.Sprintf(
+		"Programmer salary statistics\nAverage: %.2f\nMedian: %.2f\nDeviation: %.2f\nVariance: %.2f\n",
+		avg, median, stddev, variance,
+	)
 
 	res = charting.NewRenderResponse()
 	res.AddChart(ProgrammerSalaryBarChartID, &copyChart)

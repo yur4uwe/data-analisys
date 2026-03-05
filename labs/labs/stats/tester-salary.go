@@ -11,9 +11,17 @@ import (
 const (
 	TesterSalaryBarChartID = "tester-salary"
 	TesterSalaryBarGraphID = "tester-salary"
+
+	TesterSalaryStatsID = "tester-salary-stats"
 )
 
 var (
+	TesterSalaryStats = charting.MutableField{
+		ID:      TesterSalaryStatsID,
+		Control: charting.ControlNoControl,
+		Label:   "Tester salary statistics",
+	}
+
 	TesterSalaryGraph = charting.ChartDataset{
 		Label:           "Tester Salary",
 		BackgroundColor: []string{charting.Color1, charting.Color2, charting.Color3, charting.Color4, charting.Color5},
@@ -31,6 +39,9 @@ var (
 		YAxisConfig: charting.LinearAxis,
 		Datasets: map[string]*charting.ChartDataset{
 			TesterSalaryBarGraphID: &TesterSalaryGraph,
+		},
+		ChartVariables: []charting.MutableField{
+			TesterSalaryStats,
 		},
 	}
 )
@@ -51,25 +62,20 @@ func RenderTesterSalary(req *charting.RenderRequest) (res *charting.RenderRespon
 		}
 	}
 
+	salaries := salariesFor(Tester)
 	buckets := make([]float64, 5)
 	min_salary := math.Inf(1)
 	max_salary := math.Inf(-1)
 
 	// Find min and max salary across all positions
-	for i := range salaryRecords.ID {
-		min_salary = math.Min(min_salary, salaryRecords.Salary[i])
-		max_salary = math.Max(max_salary, salaryRecords.Salary[i])
+	for _, salary := range salaries {
+		min_salary = math.Min(min_salary, salary)
+		max_salary = math.Max(max_salary, salary)
 	}
 
 	bucket_size := (max_salary - min_salary) / float64(len(buckets))
-
-	// Fill buckets only for testers
-	for i := range salaryRecords.ID {
-		if salaryRecords.Position[i] != Tester {
-			continue
-		}
-
-		bucket_index := int((salaryRecords.Salary[i] - min_salary) / bucket_size)
+	for _, salary := range salaries {
+		bucket_index := int((salary - min_salary) / bucket_size)
 		if bucket_index >= len(buckets) {
 			bucket_index = len(buckets) - 1
 		}
@@ -88,6 +94,20 @@ func RenderTesterSalary(req *charting.RenderRequest) (res *charting.RenderRespon
 	for i := range buckets {
 		copyChart.Labels[i] = fmt.Sprintf("%.0f-%.0f", x[i], x[i]+bucket_size)
 	}
+
+	avg := CalculateMean(salaries)
+	median := CalculateMedian(salaries)
+	stddev := CalculateStdDev(salaries, avg)
+	variance := CalculateVariance(salaries, avg)
+	minSalary := math.Inf(1)
+	for _, s := range salaries {
+		minSalary = math.Min(minSalary, s)
+	}
+
+	copyChart.ChartVariables[0].Label = fmt.Sprintf(
+		"Tester salary statistics:\nAverage = %.2f\nMedian = %.2f\nDeviation = %.2f\nVariance = %.2f\nMin = %.2f",
+		avg, median, stddev, variance, minSalary,
+	)
 
 	res = charting.NewRenderResponse()
 	res.AddChart(TesterSalaryBarChartID, &copyChart)

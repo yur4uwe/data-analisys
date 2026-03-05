@@ -6,6 +6,7 @@ import (
 	"labs/uncsv"
 	"math"
 	"math/rand/v2"
+	"sort"
 )
 
 const (
@@ -108,4 +109,46 @@ func CalculateStdDev(data []float64, mean float64) float64 {
 	}
 	variance := sumSquares / float64(len(data))
 	return math.Sqrt(variance)
+}
+
+// CalculateVariance computes the variance of a slice
+func CalculateVariance(data []float64, mean float64) float64 {
+	if len(data) == 0 {
+		return 0
+	}
+	sumSquares := 0.0
+	for _, v := range data {
+		diff := v - mean
+		sumSquares += diff * diff
+	}
+	return sumSquares / float64(len(data))
+}
+
+// CalculateMedian computes the median of a slice
+func CalculateMedian(data []float64) float64 {
+	if len(data) == 0 {
+		return 0
+	}
+	sorted := make([]float64, len(data))
+	copy(sorted, data)
+	sort.Float64s(sorted)
+	n := len(sorted)
+	if n%2 == 0 {
+		return (sorted[n/2-1] + sorted[n/2]) / 2
+	}
+	return sorted[n/2]
+}
+
+// salariesFor returns all salaries for the given position
+func salariesFor(position PositionType) []float64 {
+	if salaryRecords == nil {
+		return nil
+	}
+	var result []float64
+	for i, pos := range salaryRecords.Position {
+		if pos == position {
+			result = append(result, salaryRecords.Salary[i])
+		}
+	}
+	return result
 }
