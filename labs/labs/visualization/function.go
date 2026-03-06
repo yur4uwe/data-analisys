@@ -65,7 +65,7 @@ var (
 
 	FunctionGraph = charting.ChartDataset{
 		Label:           "Function cos(x)*e^(-(|x|)) Graph",
-		BorderColor:     charting.Color1,
+		BorderColor:     charting.ColorIndigo,
 		BackgroundColor: []string{charting.ColorTransparent},
 		PointRadius:     0,
 		BorderWidth:     2,

@@ -23,10 +23,16 @@ var (
 	}
 
 	TesterSalaryGraph = charting.ChartDataset{
-		Label:           "Tester Salary",
-		BackgroundColor: []string{charting.Color1, charting.Color2, charting.Color3, charting.Color4, charting.Color5},
-		PointRadius:     0,
-		ShowLine:        true,
+		Label: "Tester Salary",
+		BackgroundColor: []string{
+			charting.ColorAmber,
+			charting.ColorBlue,
+			charting.ColorCyan,
+			charting.ColorEmerald,
+			charting.ColorFuchsia,
+		},
+		PointRadius: 0,
+		ShowLine:    true,
 	}
 
 	TesterSalaryChart = charting.Chart{

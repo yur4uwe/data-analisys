@@ -33,17 +33,39 @@ const (
 )
 
 const (
-	Color1  = "#2563eb" // bad color
-	Color2  = "#dc2626"
-	Color3  = "#fbbf24"
-	Color4  = "#22c55e"
-	Color5  = "#7c3aed"
-	Color6  = "#8b5cf6"
-	Color7  = "#e879f9"
-	Color8  = "#f97316"
-	Color9  = "#a855f7"
-	Color10 = "#e11d48"
-	Color11 = "#10b981"
+	ColorBlue        = "#1d4ed8"
+	ColorRed         = "#b91c1c"
+	ColorAmber       = "#d97706"
+	ColorGreen       = "#16a34a"
+	ColorViolet      = "#6d28d9"
+	ColorPurple      = "#7c3aed"
+	ColorFuchsia     = "#c026d3"
+	ColorOrange      = "#ea580c"
+	ColorLightPurple = "#9333ea"
+	ColorCrimson     = "#be123c"
+	ColorEmerald     = "#059669"
+	ColorCyan        = "#0891b2"
+	ColorPink        = "#db2777"
+	ColorLime        = "#65a30d"
+	ColorTeal        = "#0d9488"
+	ColorIndigo      = "#4f46e5"
+	ColorRose        = "#e11d48"
+	ColorSky         = "#0284c7"
+	ColorYellow      = "#ca8a04"
+	ColorSlate       = "#475569"
+
+	// Legacy aliases kept for backwards compatibility
+	Color1  = ColorBlue
+	Color2  = ColorRed
+	Color3  = ColorAmber
+	Color4  = ColorGreen
+	Color5  = ColorViolet
+	Color6  = ColorPurple
+	Color7  = ColorFuchsia
+	Color8  = ColorOrange
+	Color9  = ColorLightPurple
+	Color10 = ColorCrimson
+	Color11 = ColorEmerald
 
 	ColorTransparent = "rgba(0, 0, 0, 0.1)"
 )

@@ -15,15 +15,9 @@ const (
 
 var (
 	RadialGraph = charting.ChartDataset{
-		Label:       "Revenue Sources",
-		BorderColor: charting.ColorTransparent,
-		BackgroundColor: []string{
-			charting.Color8,
-			charting.Color10,
-			charting.Color11,
-			charting.Color4,
-			charting.Color5,
-		},
+		Label: "Revenue Sources", BorderColor: charting.ColorTransparent,
+		BackgroundColor: []string{charting.ColorAmber, charting.ColorBlue,
+			charting.ColorCyan, charting.ColorEmerald, charting.ColorFuchsia},
 		BorderWidth: 2,
 		PointRadius: 0,
 		ShowLine:    true,

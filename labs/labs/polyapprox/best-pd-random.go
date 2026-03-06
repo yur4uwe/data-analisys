@@ -14,7 +14,7 @@ const (
 var (
 	mseGraph = charting.ChartDataset{
 		Label:       "MSE vs Degree",
-		BorderColor: charting.Color11,
+		BorderColor: charting.ColorAmber,
 		ShowLine:    true,
 	}
 

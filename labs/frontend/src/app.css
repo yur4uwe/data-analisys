@@ -56,15 +56,15 @@
 /* Chart styling */
 #lab-container {
     padding: 20px;
-    background-color: #1b2636;
+    background-color: #f0f2f5;
 }
 
 .chart-wrapper {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: #ffffff;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #d0d7e0;
 }
 
 .chart-wrapper canvas {

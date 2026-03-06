@@ -44,7 +44,7 @@ var (
 
 	sampleDataGraph = charting.ChartDataset{
 		Label:           "Sample Data",
-		BorderColor:     charting.Color10,
+		BorderColor:     charting.ColorEmerald,
 		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,
@@ -55,7 +55,7 @@ var (
 
 	sampleDataApproxGraph = charting.ChartDataset{
 		Label:           "Sample Data Approximation",
-		BorderColor:     charting.Color6,
+		BorderColor:     charting.ColorAmber,
 		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
 		BorderWidth:     2,
 		PointRadius:     0,

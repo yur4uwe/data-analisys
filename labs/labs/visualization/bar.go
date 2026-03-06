@@ -17,11 +17,11 @@ var (
 	BarGraph = charting.ChartDataset{
 		Label: "Spending",
 		BackgroundColor: []string{
-			charting.Color1,
-			charting.Color2,
-			charting.Color3,
-			charting.Color4,
-			charting.Color5,
+			charting.ColorAmber,
+			charting.ColorBlue,
+			charting.ColorCyan,
+			charting.ColorEmerald,
+			charting.ColorFuchsia,
 		},
 		BorderColor: "rgba(0, 0, 0, 0.1)",
 		BorderWidth: 2,

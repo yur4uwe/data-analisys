@@ -41,7 +41,7 @@ var (
 
 	MeanCorrelationGraph = charting.ChartDataset{
 		Label:           "Relatioship between error of mean and size of sample",
-		BorderColor:     charting.Color1,
+		BorderColor:     charting.ColorLightPurple,
 		BackgroundColor: []string{charting.ColorTransparent},
 		ShowLine:        true,
 		Togglable:       true,
@@ -53,7 +53,7 @@ var (
 
 	StdDevCorrelationGraph = charting.ChartDataset{
 		Label:           "Relationship between error of stddev and size of sample",
-		BorderColor:     charting.Color8,
+		BorderColor:     charting.ColorOrange,
 		BackgroundColor: []string{charting.ColorTransparent},
 		ShowLine:        true,
 		Togglable:       true,

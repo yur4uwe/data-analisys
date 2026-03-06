@@ -16,7 +16,7 @@ const (
 var (
 	LinearGraph = charting.ChartDataset{
 		Label:           "Revenue $",
-		BorderColor:     charting.Color1,
+		BorderColor:     charting.ColorAmber,
 		BackgroundColor: []string{"rgba(37, 99, 235, 0.1)"},
 		PointRadius:     0,
 		BorderWidth:     2,

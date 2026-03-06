@@ -25,7 +25,7 @@ var (
 
 	ProgrammerSalaryGraph = charting.ChartDataset{
 		Label:           "Programmer Salary",
-		BackgroundColor: []string{charting.Color3, charting.Color4, charting.Color5, charting.Color6, charting.Color7},
+		BackgroundColor: []string{charting.ColorEmerald, charting.ColorLime, charting.ColorIndigo, charting.ColorSlate, charting.ColorFuchsia},
 		PointRadius:     0,
 		ShowLine:        true,
 	}

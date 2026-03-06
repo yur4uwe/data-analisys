@@ -26,8 +26,8 @@ var (
 
 	RandomSequenceGraph = charting.ChartDataset{
 		Label:           "Sequence of random numbers",
-		BorderColor:     charting.Color6,
-		BackgroundColor: []string{charting.Color5},
+		BorderColor:     charting.ColorAmber,
+		BackgroundColor: []string{charting.ColorAmber},
 		PointRadius:     3,
 		Togglable:       false,
 	}

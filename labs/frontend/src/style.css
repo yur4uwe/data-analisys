@@ -1,25 +1,25 @@
 :root {
-    --bg-primary: #1b2636;
-    --bg-secondary: #2d3e52;
-    --border-color: #3d4e6a;
-    --text-primary: #e8e8e8;
-    --text-secondary: #b0b0b0;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f7fa;
+    --border-color: #d0d7e0;
+    --text-primary: #1a1a2e;
+    --text-secondary: #555555;
     --accent-color: #4a90e2;
     --success-color: #4caf50;
     --danger-color: #f44336;
     --radius: 6px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 html {
-    background-color: rgba(27, 38, 54, 1);
+    background-color: #f0f2f5;
     text-align: center;
-    color: white;
+    color: #1a1a2e;
 }
 
 body {
     margin: 0;
-    color: white;
+    color: #1a1a2e;
     font-family:
         "Nunito",
         -apple-system,

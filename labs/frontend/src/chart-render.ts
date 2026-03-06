@@ -151,7 +151,7 @@ export function renderChart(chartConfig: charting.Chart) {
       title: {
         display: true,
         text: chartConfig.title,
-        color: "#ffffff",
+        color: "#000000",
         font: {
           size: 18,
           weight: "bold",
@@ -163,7 +163,7 @@ export function renderChart(chartConfig: charting.Chart) {
       },
       legend: {
         labels: {
-          color: "#ffffff",
+          color: "#000000",
           font: {
             size: 13,
           },
@@ -190,40 +190,40 @@ export function renderChart(chartConfig: charting.Chart) {
         title: {
           display: true,
           text: chartConfig.xAxisLabel,
-          color: "#ffffff",
+          color: "#000000",
           font: {
             size: 14,
             weight: "bold",
           },
         },
         ticks: {
-          color: "#ffffff",
+          color: "#000000",
           font: {
             size: 12,
           },
         },
         grid: {
-          color: "rgba(255, 255, 255, 0.2)",
+          color: "rgba(0, 0, 0, 0.1)",
         },
       },
       y: {
         title: {
           display: true,
           text: chartConfig.yAxisLabel,
-          color: "#ffffff",
+          color: "#000000",
           font: {
             size: 14,
             weight: "bold",
           },
         },
         ticks: {
-          color: "#ffffff",
+          color: "#000000",
           font: {
             size: 12,
           },
         },
         grid: {
-          color: "rgba(255, 255, 255, 0.2)",
+          color: "rgba(0, 0, 0, 0.1)",
         },
       },
     };

@@ -58,7 +58,7 @@ var (
 		{
 			ID:      NoiseAmpID,
 			Label:   "Noise Amplifier",
-			Default: 1,
+			Default: 10,
 			Min:     1,
 			Max:     100,
 			Step:    1,
@@ -80,8 +80,8 @@ var (
 
 	OriginalData = charting.ChartDataset{
 		Label:           "Original",
-		BorderColor:     "#2563eb",
-		BackgroundColor: []string{"rgba(37, 99, 235, 0.1)"},
+		BorderColor:     charting.ColorAmber,
+		BackgroundColor: []string{charting.ColorAmber},
 		PointRadius:     0,
 		BorderWidth:     2,
 		ShowLine:        true,
@@ -90,8 +90,8 @@ var (
 
 	NoisyData = charting.ChartDataset{
 		Label:           "Noisy",
-		BorderColor:     "#dc2626",
-		BackgroundColor: []string{"rgba(220, 38, 38, 0.1)"},
+		BorderColor:     charting.ColorCyan,
+		BackgroundColor: []string{charting.ColorCyan},
 		PointRadius:     2,
 		BorderWidth:     1,
 		ShowLine:        true,

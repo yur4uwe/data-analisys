@@ -16,7 +16,7 @@ const (
 var (
 	EmpiricalDistributionProgrammerGraph = charting.ChartDataset{
 		Label:           "Programmer F(x)",
-		BorderColor:     charting.Color2,
+		BorderColor:     charting.ColorEmerald,
 		BackgroundColor: []string{charting.ColorTransparent},
 		ShowLine:        true,
 		PointRadius:     3,
@@ -26,7 +26,7 @@ var (
 
 	EmpiricalDistributionTesterGraph = charting.ChartDataset{
 		Label:           "Tester F(x)",
-		BorderColor:     charting.Color4,
+		BorderColor:     charting.ColorLime,
 		BackgroundColor: []string{charting.ColorTransparent},
 		ShowLine:        true,
 		PointRadius:     3,
