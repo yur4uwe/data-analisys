@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"labs/labs"
 	"labs/charting"
+	"labs/labs"
+	"labs/labs/cluster"
 	"labs/labs/polyapprox"
 	"labs/labs/render"
 	"labs/labs/stats"
@@ -42,6 +43,7 @@ func (a *App) startup(ctx context.Context) {
 	a.registry[polyapprox.LabID] = labs.NewLab3()
 	a.registry[visualization.LabID] = labs.NewLab4()
 	a.registry[stats.LabID] = labs.NewLab5()
+	a.registry[cluster.LabID] = labs.NewLab6()
 
 	fmt.Printf("Registered %d labs (lazy initialization)\n", len(a.registry))
 }

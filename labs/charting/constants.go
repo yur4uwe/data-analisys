@@ -54,18 +54,5 @@ const (
 	ColorYellow      = "#ca8a04"
 	ColorSlate       = "#475569"
 
-	// Legacy aliases kept for backwards compatibility
-	Color1  = ColorBlue
-	Color2  = ColorRed
-	Color3  = ColorAmber
-	Color4  = ColorGreen
-	Color5  = ColorViolet
-	Color6  = ColorPurple
-	Color7  = ColorFuchsia
-	Color8  = ColorOrange
-	Color9  = ColorLightPurple
-	Color10 = ColorCrimson
-	Color11 = ColorEmerald
-
 	ColorTransparent = "rgba(0, 0, 0, 0.1)"
 )
