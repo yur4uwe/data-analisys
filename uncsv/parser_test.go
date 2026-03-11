@@ -215,7 +215,17 @@ func TestDecodeFieldDecoderInterface(t *testing.T) {
 
 	err := decoder.Decode(&result)
 	if err != nil {
-		t.Logf("Decode with FieldDecoder implementation: %v", err)
+		t.Errorf("Decode with FieldDecoder implementation failed: %v", err)
+	}
+
+	if len(result.Value) != 3 {
+		t.Fatalf("Value: length mismatch: got %d, want 3", len(result.Value))
+	}
+	want := []int{100, 200, 300}
+	for i, v := range result.Value {
+		if v.Value != want[i] {
+			t.Errorf("Value[%d]: got %d, want %d", i, v.Value, want[i])
+		}
 	}
 }
 
@@ -246,8 +256,14 @@ func TestDecodeWithSpecialCharacters(t *testing.T) {
 
 	err := decoder.Decode(&result)
 	if err != nil {
-		t.Logf("Decode with special characters: %v", err)
+		t.Errorf("Decode with special characters failed: %v", err)
 	}
+
+	assertSlicesEqual(t, "Description", result.Description, []string{
+		"Hello, World",
+		"Line1\nLine2",
+		"Quote\"Test",
+	})
 }
 
 // TestDecodeMultipleTimes tests calling Decode multiple times
@@ -263,17 +279,135 @@ func TestDecodeMultipleTimes(t *testing.T) {
 
 	err := decoder.Decode(&result1)
 	if err != nil {
-		t.Logf("First Decode: %v", err)
+		t.Errorf("First Decode failed: %v", err)
 	}
+	assertSlicesEqual(t, "result1.Name", result1.Name, []string{"Alice", "Bob"})
+	assertSlicesEqual(t, "result1.Value", result1.Value, []int{100, 200})
 
-	// Try decoding again (might fail or reuse decoder)
+	// Second decode on exhausted reader should return an error (EOF on header read)
 	var result2 struct {
 		Name  []string `csv:"name"`
 		Value []int    `csv:"value"`
 	}
-
 	err = decoder.Decode(&result2)
 	if err != nil {
-		t.Logf("Second Decode: %v", err)
+		t.Error("Second Decode on exhausted reader should not return an error")
+	}
+}
+
+type PersonRow struct {
+	Name  string  `csv:"name"`
+	Age   int     `csv:"age"`
+	Score float64 `csv:"score"`
+}
+
+// TestDecodeArrayOfStructs tests decoding into a slice of structs
+func TestDecodeArrayOfStructs(t *testing.T) {
+	csvData := "name,age,score\nAlice,30,9.5\nBob,25,8.0\nCharlie,35,7.3"
+	reader := strings.NewReader(csvData)
+	decoder := NewDecoder(reader)
+
+	var result []PersonRow
+	err := decoder.Decode(&result)
+	if err != nil {
+		t.Fatalf("Decode array of structs failed: %v", err)
+	}
+
+	if len(result) != 3 {
+		t.Fatalf("length mismatch: got %d, want 3", len(result))
+	}
+
+	want := []PersonRow{
+		{"Alice", 30, 9.5},
+		{"Bob", 25, 8.0},
+		{"Charlie", 35, 7.3},
+	}
+	for i, got := range result {
+		if got != want[i] {
+			t.Errorf("result[%d]: got %+v, want %+v", i, got, want[i])
+		}
+	}
+}
+
+// TestDecodeArrayOfStructsSingleRow tests decoding a single row into a slice of structs
+func TestDecodeArrayOfStructsSingleRow(t *testing.T) {
+	csvData := "name,age,score\nZara,28,10.0"
+	reader := strings.NewReader(csvData)
+
+	var result []PersonRow
+	err := NewDecoder(reader).Decode(&result)
+	if err != nil {
+		t.Fatalf("Decode failed: %v", err)
+	}
+
+	if len(result) != 1 {
+		t.Fatalf("length mismatch: got %d, want 1", len(result))
+	}
+	if result[0] != (PersonRow{"Zara", 28, 10.0}) {
+		t.Errorf("result[0]: got %+v, want {Zara 28 10.0}", result[0])
+	}
+}
+
+// TestDecodeArrayOfStructsHeaderOnly tests decoding a CSV with only a header row
+func TestDecodeArrayOfStructsHeaderOnly(t *testing.T) {
+	csvData := "name,age,score"
+	reader := strings.NewReader(csvData)
+
+	var result []PersonRow
+	err := NewDecoder(reader).Decode(&result)
+	if err != nil {
+		t.Fatalf("Decode header-only CSV failed: %v", err)
+	}
+	if len(result) != 0 {
+		t.Errorf("expected empty slice, got %d elements", len(result))
+	}
+}
+
+// TestDecodeArrayOfStructsMissingColumn tests error when a tagged column is absent
+func TestDecodeArrayOfStructsMissingColumn(t *testing.T) {
+	csvData := "name,age\nAlice,30" // "score" column missing
+	reader := strings.NewReader(csvData)
+
+	var result []PersonRow
+	err := NewDecoder(reader).Decode(&result)
+	if err == nil {
+		t.Error("expected error for missing column, got nil")
+	}
+}
+
+// TestDecodeArrayOfStructsIgnoresUntaggedFields tests that fields without csv tags are skipped
+func TestDecodeArrayOfStructsIgnoresUntaggedFields(t *testing.T) {
+	type PartialRow struct {
+		Name    string `csv:"name"`
+		Ignored int    // no tag — should be left as zero value
+	}
+
+	csvData := "name,age\nAlice,30\nBob,25"
+	reader := strings.NewReader(csvData)
+
+	var result []PartialRow
+	err := NewDecoder(reader).Decode(&result)
+	if err != nil {
+		t.Fatalf("Decode failed: %v", err)
+	}
+
+	if len(result) != 2 {
+		t.Fatalf("length mismatch: got %d, want 2", len(result))
+	}
+	assertSlicesEqual(t, "Name", []string{result[0].Name, result[1].Name}, []string{"Alice", "Bob"})
+	if result[0].Ignored != 0 || result[1].Ignored != 0 {
+		t.Errorf("untagged field should be zero, got %d and %d", result[0].Ignored, result[1].Ignored)
+	}
+}
+
+// TestDecodeArrayOfStructsNonStructElem tests error when slice element is not a struct
+func TestDecodeArrayOfStructsNonStructElem(t *testing.T) {
+	csvData := "value\n1\n2"
+	reader := strings.NewReader(csvData)
+
+	var result []int
+	err := NewDecoder(reader).Decode(&result)
+	if err == nil {
+		t.Error("expected error for non-struct slice element, got nil")
 	}
 }

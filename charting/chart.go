@@ -22,8 +22,8 @@ type MutableField struct {
 
 // DataPoint represents a point with x and y coordinates for scatter/bubble charts
 type DataPoint struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
+	X float64 `json:"x" csv:"x"`
+	Y float64 `json:"y" csv:"y"`
 }
 
 // ChartDataset represents a single line/bar/scatter set
@@ -102,6 +102,16 @@ func (c *Chart) UpdatePointsForDataset(datasetId string, x, y []float64) error {
 		return errors.New("dataset not found in chart")
 	}
 	return c.Datasets[datasetId].UpdatePoints(x, y)
+}
+
+func (c *Chart) UpdateDataPointsForDataset(datasetId string, points []DataPoint) error {
+	dataset, ok := c.Datasets[datasetId]
+	if !ok {
+		return errors.New("dataset not found in chart")
+	}
+	dataset.PointData = points
+	c.Datasets[datasetId] = dataset
+	return nil
 }
 
 func (c *Chart) UpdateDataForDataset(datasetId string, data []float64) error {

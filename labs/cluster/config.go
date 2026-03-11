@@ -1,6 +1,11 @@
 package cluster
 
-import "labs/charting"
+import (
+	"fmt"
+	"labs/charting"
+	"labs/uncsv"
+	"os"
+)
 
 const (
 	LabID = "6"
@@ -11,20 +16,59 @@ var (
 		LabID,
 		"Data Clustering",
 		map[string]*charting.Chart{
-			ScatterPointsChartID: &ScatterPointsChart,
+			SimpleChartID: &SimpleChart,
+			KmeansChartID: &KmeansChart,
 		},
 	)
 
 	Metadata = Config.Lab
 
-	points = (*Points)(nil)
+	points = []charting.DataPoint{}
 )
 
-type Points struct {
-	X []float64 `csv:"x"`
-	Y []float64 `csv:"y"`
+func loadPoints() error {
+	if len(points) != 0 {
+		return nil
+	}
+
+	f, err := os.Open("./data/lab_6_var_12.csv")
+	if err != nil {
+		return fmt.Errorf("clustering points chart: error while reading file: %s", err.Error())
+	}
+	defer f.Close()
+
+	d := uncsv.NewDecoder(f)
+	d.Comma = ','
+	if err := d.Decode(&points); err != nil {
+		return fmt.Errorf("clustering points chart: error while decoding csv: %s", err.Error())
+	}
+
+	return nil
+}
+
+func clusterData(labels []int, num_centroids int, chart *charting.Chart) {
+	colors := [...]string{charting.ColorAmber, charting.ColorBlue, charting.ColorCyan, charting.ColorEmerald, charting.ColorLightPurple}
+	for cluster := range num_centroids {
+		cluster_points := make([]charting.DataPoint, 0)
+		for i := range points {
+			if labels[i] == cluster {
+				cluster_points = append(cluster_points, points[i])
+			}
+		}
+
+		key := fmt.Sprintf("cluster-%d", cluster)
+		chart.Datasets[key] = &charting.ChartDataset{
+			Label:           fmt.Sprintf("Cluster %d", cluster),
+			BorderColor:     colors[cluster%len(colors)],
+			BackgroundColor: []string{charting.ColorTransparent},
+			PointRadius:     4,
+			BorderWidth:     2,
+			PointData:       cluster_points,
+		}
+	}
 }
 
 func init() {
-	ScatterPointsChart.RenderFunc = RenderScatteredPoints
+	SimpleChart.RenderFunc = RenderSimple
+	KmeansChart.RenderFunc = RenderKmeans
 }

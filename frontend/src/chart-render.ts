@@ -158,7 +158,7 @@ export function renderChart(chartConfig: charting.Chart) {
       } else if (dataset.data) {
         data = dataset.data;
       } else {
-        console.warn("Empty data");
+        console.warn(`Empty data in ${dataset.label}`);
         data = [];
       }
 

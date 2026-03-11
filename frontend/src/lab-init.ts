@@ -33,28 +33,49 @@ function CreateInput(
   );
   parentElement.appendChild(label);
 
-  const input = document.createElement("input");
-  input.type = field.control;
-  input.setAttribute("data-input-type", field.control);
-  input.id = buildInputFieldName(chartId, graphId, field.id);
-  input.value = field.default.toString();
-  input.min = field.min.toString();
-  input.max = field.max.toString();
-  input.step = field.step.toString();
+  let fieldInput: HTMLSelectElement | HTMLInputElement;
+  if (field.control === "select") {
+    fieldInput = document.createElement("select") as HTMLSelectElement;
+  } else {
+    fieldInput = document.createElement("input") as HTMLInputElement;
 
-  const updateLabel = () => {
-    label.textContent = `${field.label} (${input.value})`;
-  };
-
-  if (field.control === "range") {
-    updateLabel();
-    input.oninput = updateLabel;
-    input.onchange = updateLabel;
-  } else if (field.control === "nocontrol") {
-    input.hidden = true;
+    fieldInput.type = field.control;
+    fieldInput.min = field.min.toString();
+    fieldInput.max = field.max.toString();
+    fieldInput.step = field.step.toString();
   }
 
-  parentElement.appendChild(input);
+  fieldInput.setAttribute("data-input-type", field.control);
+  fieldInput.id = buildInputFieldName(chartId, graphId, field.id);
+  fieldInput.value = field.default.toString();
+  const updateLabel = () => {
+    label.textContent = `${field.label} (${fieldInput.value})`;
+  };
+
+  switch (field.control) {
+    case "range":
+      updateLabel();
+      fieldInput.oninput = updateLabel;
+      fieldInput.onchange = updateLabel;
+      break;
+    case "nocontrol":
+      fieldInput.hidden = true;
+      break;
+    case "select":
+      if (!field.options || field.options.length === 0) {
+        console.warn("no options for select field");
+        break;
+      }
+      for (const opt of field.options) {
+        const option = document.createElement("option");
+        option.value = field.options.indexOf(opt).toString();
+        option.innerText = opt;
+
+        fieldInput.appendChild(option);
+      }
+      break;
+  }
+  parentElement.appendChild(fieldInput);
 }
 
 export function updateAllFieldLabels(chart: charting.Chart) {

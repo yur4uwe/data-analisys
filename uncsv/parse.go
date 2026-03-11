@@ -95,7 +95,53 @@ func decodeStructOfArrays(v any, colname_to_field map[string]int, r *csv.Reader)
 }
 
 func decodeArrayOfStructs(v any, colname_to_field map[string]int, r *csv.Reader) error {
-	return errors.New("not implemented")
+	destT := reflect.TypeOf(v)
+	destV := reflect.ValueOf(v)
+
+	// Dereference pointer (v is always *[]T or *[N]T from Decode)
+	destT = destT.Elem()
+	destV = destV.Elem()
+
+	elemType := destT.Elem() // the struct element type
+	if elemType.Kind() != reflect.Struct {
+		return fmt.Errorf("expected slice/array of structs, got slice/array of %s", elemType.Kind())
+	}
+
+	for rowIdx := 0; ; rowIdx++ {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return fmt.Errorf("decoding array of structs error: %w", err)
+		}
+
+		newElem := reflect.New(elemType).Elem()
+
+		for i := range elemType.NumField() {
+			fieldT := elemType.Field(i)
+			tag := fieldT.Tag.Get("csv")
+			if tag == "" {
+				continue
+			}
+
+			colIdx, ok := colname_to_field[tag]
+			if !ok {
+				return fmt.Errorf("field %s: column %s not found in CSV header", fieldT.Name, tag)
+			}
+
+			val, err := parseElement(row[colIdx], fieldT.Type)
+			if err != nil {
+				return fmt.Errorf("at field %s, colIdx %d: element parsing error: %w", fieldT.Name, colIdx, err)
+			}
+			newElem.Field(i).Set(reflect.ValueOf(val).Convert(fieldT.Type))
+		}
+
+		if err := setValueAtIndex(destV, rowIdx, newElem.Interface()); err != nil {
+			return fmt.Errorf("failed to set element at row %d: %w", rowIdx, err)
+		}
+	}
+
+	return nil
 }
 
 // Assumes struct of arrays
@@ -107,7 +153,9 @@ func (p *Decoder) Decode(v any) error {
 	}
 
 	header, err := csvReader.Read()
-	if err != nil {
+	if err == io.EOF {
+		return nil
+	} else if err != nil {
 		return err
 	}
 
@@ -126,133 +174,19 @@ func (p *Decoder) Decode(v any) error {
 		return fmt.Errorf("cannot decode nil")
 	}
 
+	if destT.Kind() != reflect.Pointer {
+		return fmt.Errorf("expected to recieve pointer to dest recieved: %s", destT.String())
+	}
+	destT = destT.Elem()
+
 	// both decide only outermost shell
 	if destT.Kind() == reflect.Slice || destT.Kind() == reflect.Array {
 		return decodeArrayOfStructs(v, columnNameToField, csvReader)
-	} else if destT.Kind() == reflect.Struct || (destT.Kind() == reflect.Pointer && destT.Elem().Kind() == reflect.Struct) {
+	} else if destT.Kind() == reflect.Struct {
 		return decodeStructOfArrays(v, columnNameToField, csvReader)
 	} else {
 		return fmt.Errorf("well, you can put any, BUT HOW DO YOU EXPECT TO FIT CSV IN %s", destT.String())
 	}
-
-	if destT.Kind() != reflect.Pointer || destT.Elem().Kind() != reflect.Struct {
-		return fmt.Errorf("type mismatch, expected pointer to struct of slices|arrays got: %s", destT.Kind())
-	}
-	destT = destT.Elem()
-	destV := reflect.ValueOf(v).Elem()
-
-	for rowIdx := 0; ; rowIdx++ {
-		row, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-
-		for i := range destT.NumField() {
-			fieldT := destT.Field(i)
-
-			fieldKind := fieldT.Type.Kind()
-			if fieldKind != reflect.Slice && fieldKind != reflect.Array {
-				return fmt.Errorf("expected fields to be arrays|slices got %s", fieldT.Type.Kind())
-			}
-
-			fieldV := destV.Field(i)
-			if rowIdx >= fieldV.Len() && fieldKind == reflect.Array {
-				return fmt.Errorf("array field %s doesn't have enough space for row %d (length: %d)",
-					fieldT.Name, rowIdx, fieldV.Len())
-			}
-			if fieldV.Kind() == reflect.Slice && fieldV.Cap() == 0 {
-				fieldV.Set(reflect.MakeSlice(fieldV.Type(), 0, 128))
-			}
-
-			tag := fieldT.Tag.Get("csv")
-			if tag == "" {
-				continue
-			}
-
-			colIdx, ok := columnNameToField[tag]
-			if !ok {
-				return fmt.Errorf("field %s: column %s not found in CSV header", fieldT.Name, tag)
-			}
-
-			elemType := fieldT.Type.Elem()
-			if reflect.PointerTo(elemType).Implements(reflect.TypeFor[FieldDecoder]()) {
-				newElem := reflect.New(elemType)
-				if decoder, ok := newElem.Interface().(FieldDecoder); ok {
-					if err := decoder.DecodeCSV(row[colIdx]); err != nil {
-						return fmt.Errorf(
-							"field %s row %d: custom decode failed: %w",
-							fieldT.Name, rowIdx, err,
-						)
-					}
-
-					if err := setValueAtIndex(fieldV, rowIdx, newElem.Elem().Interface()); err != nil {
-						return fmt.Errorf("field %s row %d: %w", fieldT.Name, rowIdx, err)
-					}
-					continue
-				}
-			}
-			elemKind := elemType.Kind()
-
-			elemKindSizeBits := getBitSizeFromKind(elemKind)
-			switch elemKind {
-			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-				intVal, err := strconv.ParseInt(row[colIdx], 0, elemKindSizeBits)
-				if err != nil {
-					return fmt.Errorf(
-						"failed to parse value %s as %d-bit integer for field %s: %w",
-						row[colIdx], elemKindSizeBits, fieldT.Name, err,
-					)
-				}
-				if err := setValueAtIndex(fieldV, rowIdx, intVal); err != nil {
-					return fmt.Errorf("field %s row %d: %w", fieldT.Name, rowIdx, err)
-				}
-			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				uintVal, err := strconv.ParseUint(row[colIdx], 0, elemKindSizeBits)
-				if err != nil {
-					return fmt.Errorf(
-						"failed to parse value %s as %d-bit unsigned integer for field %s: %w",
-						row[colIdx], elemKindSizeBits, fieldT.Name, err,
-					)
-				}
-				if err := setValueAtIndex(fieldV, rowIdx, uintVal); err != nil {
-					return fmt.Errorf("field %s row %d: %w", fieldT.Name, rowIdx, err)
-				}
-			case reflect.Bool:
-				boolVal, err := strconv.ParseBool(row[colIdx])
-				if err != nil {
-					return fmt.Errorf(
-						"failed to parse value %s as a boolean for field %s: %w",
-						row[colIdx], fieldT.Name, err,
-					)
-				}
-				if err := setValueAtIndex(fieldV, rowIdx, boolVal); err != nil {
-					return fmt.Errorf("field %s row %d: %w", fieldT.Name, rowIdx, err)
-				}
-			case reflect.Float32, reflect.Float64:
-				floatVal, err := strconv.ParseFloat(row[colIdx], elemKindSizeBits)
-				if err != nil {
-					return fmt.Errorf(
-						"failed to parse value %s as float%d for field %s: %w",
-						row[colIdx], elemKindSizeBits, fieldT.Name, err,
-					)
-				}
-				if err := setValueAtIndex(fieldV, rowIdx, floatVal); err != nil {
-					return fmt.Errorf("field %s row %d: %w", fieldT.Name, rowIdx, err)
-				}
-			case reflect.String:
-				if err := setValueAtIndex(fieldV, rowIdx, row[colIdx]); err != nil {
-					return fmt.Errorf("field %s row %d: %w", fieldT.Name, rowIdx, err)
-				}
-			default:
-				return fmt.Errorf("expected kind of element to be of simple type")
-			}
-		}
-
-	}
-
-	return nil
 }
 
 func (p *Encoder) Encode(v any) error {
