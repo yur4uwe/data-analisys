@@ -21,12 +21,14 @@ const (
 	ChartTypeScatter ChartType = "scatter"
 	ChartTypeBubble  ChartType = "bubble"
 	ChartTypePie     ChartType = "pie"
+	ChartTypeHeatmap ChartType = "heatmap"
 
 	ChartTypeMultiLine    ChartType = "multi-line"
 	ChartTypeMultiBar     ChartType = "multi-bar"
 	ChartTypeMultiScatter ChartType = "multi-scatter"
 	ChartTypeMultiBubble  ChartType = "multi-bubble"
 	ChartTypeMultiPie     ChartType = "multi-pie"
+	ChartTypeMultiHeatmap ChartType = "multi-heatmap"
 )
 
 func Multi(ct ChartType) ChartType {

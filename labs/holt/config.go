@@ -7,22 +7,26 @@ import (
 const (
 	LabID = "8"
 
-	ChartHoltTrainID = "holt-train"
-	ChartHoltTestID  = "holt-test"
+	ChartHoltTrainID   = "holt-train"
+	ChartHoltTestID    = "holt-test"
+	ChartHoltOptimalID = "holt-optimal"
 
 	GraphTrainActualID   = "train-actual"
 	GraphTrainForecastID = "train-forecast"
+	GraphErrHeatmapID    = "error-heatmap"
 
 	GraphTestActualID   = "test-actual"
 	GraphTestForecastID = "test-forecast"
 
 	VariableEpochsID       = "epochs"
 	VariableLearningRateID = "learning-rate"
+	VariableParamStepID    = "param-step"
 
 	DisplayOptimalAlphaID = "optimal-alpha"
 	DisplayOptimalBetaID  = "optimal-beta"
 	DisplayTrainMSEID     = "train-mse"
 	DisplayTestMSEID      = "test-mse"
+	DisplayOptimalMSEID   = "optimal-mse"
 )
 
 type ExchangeRateHistory struct {
@@ -44,9 +48,19 @@ var (
 	VariableLearningRate = charting.MutableField{
 		ID:      VariableLearningRateID,
 		Label:   "Learning Rate",
-		Default: 0.01,
+		Default: 1.0,
+		Min:     0.01,
+		Max:     100.0,
+		Step:    0.01,
+		Control: charting.ControlRange,
+	}
+
+	VariableHeatmapParamStep = charting.MutableField{
+		ID:      VariableParamStepID,
+		Label:   "Parameter Step Size",
+		Default: 0.05,
 		Min:     0.001,
-		Max:     1.0,
+		Max:     0.1,
 		Step:    0.001,
 		Control: charting.ControlRange,
 	}
@@ -55,6 +69,7 @@ var (
 	OptimalBetaField  = charting.MutableField{ID: DisplayOptimalBetaID, Label: "Optimal Beta: -", Control: charting.ControlNoControl}
 	TrainMSEField     = charting.MutableField{ID: DisplayTrainMSEID, Label: "Train MSE: -", Control: charting.ControlNoControl}
 	TestMSEField      = charting.MutableField{ID: DisplayTestMSEID, Label: "Test MSE: -", Control: charting.ControlNoControl}
+	OptimalMSEField   = charting.MutableField{ID: DisplayOptimalMSEID, Label: "Optimal MSE: -", Control: charting.ControlNoControl}
 
 	TrainActualGraph = charting.ChartDataset{
 		Label:           "Train Data",
@@ -104,6 +119,19 @@ var (
 		},
 	}
 
+	HeatmapGraph = charting.ChartDataset{
+		Label:           "Holt error vs alpha and beta",
+		BorderColor:     charting.ColorTransparent,
+		BackgroundColor: []string{charting.ColorBlue, charting.ColorRed},
+		BorderWidth:     0,
+		PointRadius:     0,
+		GraphVariables: []charting.MutableField{
+			OptimalMSEField,
+			OptimalAlphaField,
+			OptimalBetaField,
+		},
+	}
+
 	TrainChart = charting.Chart{
 		ID:          ChartHoltTrainID,
 		Title:       "Holt's Method - Training Phase",
@@ -136,12 +164,29 @@ var (
 		},
 	}
 
+	OptimalChart = charting.Chart{
+		ID:          ChartHoltOptimalID,
+		Title:       "Heatmap of errors vs alpha and beta",
+		Type:        charting.ChartTypeHeatmap,
+		XAxisLabel:  "Alpha",
+		YAxisLabel:  "Beta",
+		XAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LinearAxis,
+		ChartVariables: []charting.MutableField{
+			VariableHeatmapParamStep,
+		},
+		Datasets: map[string]*charting.ChartDataset{
+			GraphErrHeatmapID: &HeatmapGraph,
+		},
+	}
+
 	Config = charting.NewLabConfig(
 		LabID,
 		"Holt's Linear Trend Forecasting",
 		map[string]*charting.Chart{
-			ChartHoltTestID:  &TestChart,
-			ChartHoltTrainID: &TrainChart,
+			ChartHoltTestID:    &TestChart,
+			ChartHoltTrainID:   &TrainChart,
+			ChartHoltOptimalID: &OptimalChart,
 		},
 	)
 

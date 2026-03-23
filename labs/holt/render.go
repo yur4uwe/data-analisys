@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"labs/charting"
 	"labs/uncsv"
+	"math"
 	"os"
 	"strings"
 )
@@ -85,7 +86,7 @@ func RenderHoltTest(req *charting.RenderRequest) (res *charting.RenderResponse) 
 	for i := range copyTestChart.Datasets[GraphTestForecastID].GraphVariables {
 		field := &copyTestChart.Datasets[GraphTestForecastID].GraphVariables[i]
 		if strings.HasSuffix(field.ID, DisplayTestMSEID) {
-			field.Label = fmt.Sprintf("Test MSE: %.4f", testMSE)
+			field.Label = fmt.Sprintf("Test MSE: %.4e", testMSE)
 		}
 	}
 
@@ -137,7 +138,7 @@ func RenderHolt(req *charting.RenderRequest) (res *charting.RenderResponse) {
 		case DisplayOptimalBetaID:
 			field.Label = fmt.Sprintf("Optimal Beta: %.4f", bestBeta)
 		case DisplayTrainMSEID:
-			field.Label = fmt.Sprintf("Train MSE: %.4f", trainMSE)
+			field.Label = fmt.Sprintf("Train MSE: %.4e", trainMSE)
 		}
 	}
 
@@ -146,7 +147,82 @@ func RenderHolt(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	return res
 }
 
+func RenderError(req *charting.RenderRequest) (res *charting.RenderResponse) {
+	if err := loadExchangeHistory(); err != nil {
+		return res.NewError(err.Error())
+	}
+
+	// Holt parameters MUST be in [0, 1] to be stable
+	minAlpha, maxAlpha := 0.0, 1.0
+	minBeta, maxBeta := 0.0, 1.0
+
+	step, ok := req.GetChartVariable(ChartHoltOptimalID, VariableParamStepID)
+	if !ok {
+		step = VariableHeatmapParamStep.Default
+	}
+
+	nAlpha := int((maxAlpha-minAlpha)/step) + 1
+	nBeta := int((maxBeta-minBeta)/step) + 1
+
+	points := make([]charting.DataPoint, nAlpha*nBeta)
+	rawValues := make([]float64, nAlpha*nBeta)
+
+	bestAlpha, bestBeta, bestMSE := math.MaxFloat64, math.MaxFloat64, math.MaxFloat64
+
+	for i := range nAlpha {
+		alpha := minAlpha + step*float64(i)
+		for j := range nBeta {
+			beta := minBeta + step*float64(j)
+
+			forecasts, _, _ := HoltForecast(trainExchangeRateData.ExchangeRate, alpha, beta)
+			forecastMSE := MSE(trainExchangeRateData.ExchangeRate, forecasts)
+
+			if forecastMSE < bestMSE {
+				bestMSE = forecastMSE
+				bestAlpha = alpha
+				bestBeta = beta
+			}
+
+			index := i*nBeta + j
+			rawValues[index] = forecastMSE
+			points[index] = charting.DataPoint{X: alpha, Y: beta}
+		}
+	}
+
+	// Outlier Suppression: Cap values at 10x bestMSE to keep the heatmap gradient useful
+	capValue := bestMSE * 10
+	values := make([]any, len(rawValues))
+	for i, v := range rawValues {
+		if v > capValue {
+			values[i] = capValue
+		} else {
+			values[i] = v
+		}
+	}
+
+	copyChart := charting.CopyChart(OptimalChart)
+	copyChart.UpdateDataPointsForDataset(GraphErrHeatmapID, points)
+	copyChart.UpdateDataForDataset(GraphErrHeatmapID, values)
+
+	for i := range copyChart.Datasets[GraphErrHeatmapID].GraphVariables {
+		field := &copyChart.Datasets[GraphErrHeatmapID].GraphVariables[i]
+		switch field.ID {
+		case DisplayOptimalAlphaID:
+			field.Label = fmt.Sprintf("Optimal Alpha: %.4f", bestAlpha)
+		case DisplayOptimalBetaID:
+			field.Label = fmt.Sprintf("Optimal Beta: %.4f", bestBeta)
+		case DisplayOptimalMSEID:
+			field.Label = fmt.Sprintf("Optimal MSE: %.4e", bestMSE)
+		}
+	}
+
+	res = charting.NewRenderResponse()
+	res.AddChart(copyChart.ID, &copyChart)
+	return res
+}
+
 func init() {
 	TrainChart.RenderFunc = RenderHolt
 	TestChart.RenderFunc = RenderHoltTest
+	OptimalChart.RenderFunc = RenderError
 }

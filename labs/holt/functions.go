@@ -1,6 +1,8 @@
 package holt
 
-import "math"
+import (
+	"math"
+)
 
 // HoltForecast computes the Holt's Linear Trend forecast for a given series.
 // Returns the fitted/forecasted values, and the final Level and Trend.

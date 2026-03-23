@@ -79,7 +79,7 @@ function CreateInput(
 }
 
 export function updateAllFieldLabels(chart: charting.Chart) {
-  if (!chart || !chart.chartVariables) {
+  if (!chart) {
     return;
   }
 
@@ -94,13 +94,15 @@ export function updateAllFieldLabels(chart: charting.Chart) {
         `label[data-input-id="${inputId}"]`,
       ) as HTMLLabelElement;
 
-      if (label && input.getAttribute("data-input-type") === "nocontrol") {
+      if (label && input && input.getAttribute("data-input-type") === "nocontrol") {
         label.innerText = field.label;
       }
     };
 
   // Update chart variables
-  chart.chartVariables.forEach(changeLabel(chartId, null));
+  if (chart.chartVariables) {
+    chart.chartVariables.forEach(changeLabel(chartId, null));
+  }
 
   // Update dataset-specific variables if they exist
   if (chart.datasets) {
