@@ -14,14 +14,20 @@ const (
 )
 
 var (
-	RadialGraph = charting.ChartDataset{
-		Label: "Revenue Sources", BorderColor: charting.ColorTransparent,
-		BackgroundColor: []string{charting.ColorAmber, charting.ColorBlue,
-			charting.ColorCyan, charting.ColorEmerald, charting.ColorFuchsia},
-		BorderWidth: 2,
-		PointRadius: 0,
-		ShowLine:    true,
-		Togglable:   true,
+	RadialGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Revenue Sources",
+			BorderColor: charting.ToColor(charting.ColorTransparent),
+			BorderWidth: 2,
+			Togglable:   true,
+		},
+		BackgroundColor: []charting.Color{
+			charting.ToColor(charting.ColorAmber),
+			charting.ToColor(charting.ColorBlue),
+			charting.ToColor(charting.ColorCyan),
+			charting.ToColor(charting.ColorEmerald),
+			charting.ToColor(charting.ColorFuchsia),
+		},
 	}
 
 	RadialChart = charting.Chart{
@@ -32,12 +38,10 @@ var (
 		YAxisLabel:  "Amount",
 		XAxisConfig: charting.CategoryAxis,
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			RadialGraphID: &RadialGraph,
 		},
 	}
-
-	RadialMeta = RadialChart.Meta()
 )
 
 type RevenueSources struct {

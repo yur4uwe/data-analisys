@@ -71,67 +71,68 @@ var (
 	TestMSEField      = charting.MutableField{ID: DisplayTestMSEID, Label: "Test MSE: -", Control: charting.ControlNoControl}
 	OptimalMSEField   = charting.MutableField{ID: DisplayOptimalMSEID, Label: "Optimal MSE: -", Control: charting.ControlNoControl}
 
-	TrainActualGraph = charting.ChartDataset{
-		Label:           "Train Data",
-		BorderColor:     charting.ColorTeal,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     2,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       false,
-	}
-
-	TrainForecastGraph = charting.ChartDataset{
-		Label:           "Holt Forecast (Train)",
-		BorderColor:     charting.ColorAmber,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     2,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables: []charting.MutableField{
-			OptimalAlphaField,
-			OptimalBetaField,
-			TrainMSEField,
+	TrainActualGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Train Data",
+			BorderColor: charting.ToColor(charting.ColorTeal),
+			BorderWidth: 2,
+			Togglable:   false,
 		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	TestActualGraph = charting.ChartDataset{
-		Label:           "Test Data",
-		BorderColor:     charting.ColorTeal,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     2,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       false,
-	}
-
-	TestForecastGraph = charting.ChartDataset{
-		Label:           "Holt Forecast (Test)",
-		BorderColor:     charting.ColorRed,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     2,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables: []charting.MutableField{
-			TestMSEField,
-			OptimalAlphaField,
-			OptimalBetaField,
+	TrainForecastGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Holt Forecast (Train)",
+			BorderColor: charting.ToColor(charting.ColorAmber),
+			BorderWidth: 2,
+			Togglable:   true,
+			GraphVariables: []charting.MutableField{
+				OptimalAlphaField,
+				OptimalBetaField,
+				TrainMSEField,
+			},
 		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	HeatmapGraph = charting.ChartDataset{
-		Label:           "Holt error vs alpha and beta",
-		BorderColor:     charting.ColorTransparent,
-		BackgroundColor: []string{charting.ColorBlue, charting.ColorRed},
-		BorderWidth:     0,
-		PointRadius:     0,
-		GraphVariables: []charting.MutableField{
-			OptimalMSEField,
-			OptimalAlphaField,
-			OptimalBetaField,
+	TestActualGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Test Data",
+			BorderColor: charting.ToColor(charting.ColorTeal),
+			BorderWidth: 2,
+			Togglable:   false,
 		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
+	}
+
+	TestForecastGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Holt Forecast (Test)",
+			BorderColor: charting.ToColor(charting.ColorRed),
+			BorderWidth: 2,
+			Togglable:   true,
+			GraphVariables: []charting.MutableField{
+				TestMSEField,
+				OptimalAlphaField,
+				OptimalBetaField,
+			},
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
+	}
+
+	HeatmapGraph = charting.HeatmapDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Holt error vs alpha and beta",
+			BorderColor: charting.ToColor(charting.ColorTransparent),
+			BorderWidth: 0,
+			GraphVariables: []charting.MutableField{
+				OptimalMSEField,
+				OptimalAlphaField,
+				OptimalBetaField,
+			},
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorBlue), charting.ToColor(charting.ColorRed)},
 	}
 
 	TrainChart = charting.Chart{
@@ -142,7 +143,7 @@ var (
 		XAxisConfig: charting.CategoryAxis,
 		YAxisLabel:  "Rate (UAH)",
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			GraphTrainActualID:   &TrainActualGraph,
 			GraphTrainForecastID: &TrainForecastGraph,
 		},
@@ -160,7 +161,7 @@ var (
 		XAxisConfig: charting.CategoryAxis,
 		YAxisLabel:  "Rate (UAH)",
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			GraphTestActualID:   &TestActualGraph,
 			GraphTestForecastID: &TestForecastGraph,
 		},
@@ -177,7 +178,7 @@ var (
 		ChartVariables: []charting.MutableField{
 			VariableHeatmapParamStep,
 		},
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			GraphErrHeatmapID: &HeatmapGraph,
 		},
 	}

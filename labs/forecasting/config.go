@@ -59,80 +59,80 @@ var (
 		Control: charting.ControlRange,
 	}
 
-	OriginalDataGraph = charting.ChartDataset{
-		Label:           "Original Rate",
-		BorderColor:     charting.ColorTeal,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     2,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       false,
+	OriginalDataGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Original Rate",
+			BorderColor: charting.ToColor(charting.ColorTeal),
+			BorderWidth: 2,
+			Togglable:   false,
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	TomorrowAsTodayGraph = charting.ChartDataset{
-		Label:           "Tomorrow as Today",
-		BorderColor:     charting.ColorAmber,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     1,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables:  generateStatFields(GraphTomorrowAsTodayID),
+	TomorrowAsTodayGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:          "Tomorrow as Today",
+			BorderColor:    charting.ToColor(charting.ColorAmber),
+			BorderWidth:    1,
+			Togglable:      true,
+			GraphVariables: generateStatFields(GraphTomorrowAsTodayID),
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	TrendGraph = charting.ChartDataset{
-		Label:           "Linear Trend",
-		BorderColor:     charting.ColorBlue,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     1,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables:  generateStatFields(GraphTrendID),
+	TrendGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:          "Linear Trend",
+			BorderColor:    charting.ToColor(charting.ColorBlue),
+			BorderWidth:    1,
+			Togglable:      true,
+			GraphVariables: generateStatFields(GraphTrendID),
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	RelativeTrendGraph = charting.ChartDataset{
-		Label:           "Relative Trend",
-		BorderColor:     charting.ColorViolet,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     1,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables:  generateStatFields(GraphRelativeTrendID),
+	RelativeTrendGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:          "Relative Trend",
+			BorderColor:    charting.ToColor(charting.ColorViolet),
+			BorderWidth:    1,
+			Togglable:      true,
+			GraphVariables: generateStatFields(GraphRelativeTrendID),
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	AverageGraph = charting.ChartDataset{
-		Label:           "Simple Average",
-		BorderColor:     charting.ColorSlate,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     1,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables:  generateStatFields(GraphSimpleAvgID),
+	AverageGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:          "Simple Average",
+			BorderColor:    charting.ToColor(charting.ColorSlate),
+			BorderWidth:    1,
+			Togglable:      true,
+			GraphVariables: generateStatFields(GraphSimpleAvgID),
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	SlidingAvgGraph = charting.ChartDataset{
-		Label:           "Sliding Avg",
-		BorderColor:     charting.ColorOrange,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     1,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables:  generateStatFields(GraphSlidingAvgID),
+	SlidingAvgGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:          "Sliding Avg",
+			BorderColor:    charting.ToColor(charting.ColorOrange),
+			BorderWidth:    1,
+			Togglable:      true,
+			GraphVariables: generateStatFields(GraphSlidingAvgID),
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
-	ExponentialAvgGraph = charting.ChartDataset{
-		Label:           "Exp. Smoothing",
-		BorderColor:     charting.ColorRed,
-		BackgroundColor: []string{charting.ColorTransparent},
-		BorderWidth:     1,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables:  generateStatFields(GraphExponentialAvgID),
+	ExponentialAvgGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:          "Exp. Smoothing",
+			BorderColor:    charting.ToColor(charting.ColorRed),
+			BorderWidth:    1,
+			Togglable:      true,
+			GraphVariables: generateStatFields(GraphExponentialAvgID),
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorTransparent)},
 	}
 
 	ForecastChart = charting.Chart{
@@ -143,7 +143,7 @@ var (
 		XAxisConfig: charting.CategoryAxis,
 		YAxisLabel:  "Rate (UAH)",
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			GraphOriginalDataID:    &OriginalDataGraph,
 			GraphTomorrowAsTodayID: &TomorrowAsTodayGraph,
 			GraphTrendID:           &TrendGraph,
@@ -201,7 +201,7 @@ func loadExchageHistory() error {
 	return d.Decode(exchangeRateData)
 }
 
-func updateGraphStats(dataset *charting.ChartDataset, rates []float64, forecast []any) {
+func updateGraphStats(dataset charting.Dataset, rates []float64, forecast []any) {
 	errors := make([]float64, 0)
 	for i := 0; i < len(rates) && i < len(forecast); i++ {
 		if forecast[i] == nil {
@@ -224,8 +224,9 @@ func updateGraphStats(dataset *charting.ChartDataset, rates []float64, forecast 
 	modErr := CalculateMode(errors, 4)
 	stdErr := CalculateStdDev(errors)
 
-	for i := range dataset.GraphVariables {
-		field := &dataset.GraphVariables[i]
+	gvars := dataset.Meta()
+	for i := range gvars {
+		field := gvars[i]
 		switch {
 		case strings.HasSuffix(field.ID, DisplayMinErrorID):
 			field.Label = fmt.Sprintf("Min Error: %.4f", minErr)
@@ -313,7 +314,7 @@ func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderRespons
 	}
 	copyChart.UpdateDataForDataset(GraphSlidingAvgID, slidingForecast)
 	slidingDs := copyChart.Datasets[GraphSlidingAvgID]
-	slidingDs.Label = fmt.Sprintf("Sliding Avg (n=%d)", win)
+	slidingDs.UpdateLabel(fmt.Sprintf("Sliding Avg (n=%d)", win))
 	updateGraphStats(slidingDs, rates, slidingForecast)
 
 	// 6. Exponential Smoothing
@@ -324,7 +325,7 @@ func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderRespons
 	}
 	copyChart.UpdateDataForDataset(GraphExponentialAvgID, expForecast)
 	expDs := copyChart.Datasets[GraphExponentialAvgID]
-	expDs.Label = fmt.Sprintf("Exp. Smoothing (α=%.2f)", alpha)
+	expDs.UpdateLabel(fmt.Sprintf("Exp. Smoothing (α=%.2f)", alpha))
 	updateGraphStats(expDs, rates, expForecast)
 
 	res = charting.NewRenderResponse()

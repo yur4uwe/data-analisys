@@ -58,22 +58,21 @@ var (
 			VariableEnd,
 			VariableStep,
 		},
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			FunctionGraphID: &FunctionGraph,
 		},
 	}
 
-	FunctionGraph = charting.ChartDataset{
-		Label:           "Function cos(x)*e^(-(|x|)) Graph",
-		BorderColor:     charting.ColorIndigo,
-		BackgroundColor: []string{charting.ColorTransparent},
+	FunctionGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Function cos(x)*e^(-(|x|)) Graph",
+			BorderColor: charting.ToColor(charting.ColorIndigo),
+			BorderWidth: 2,
+			Togglable:   true,
+		},
+		BackgroundColor: charting.ToColor(charting.ColorTransparent),
 		PointRadius:     0,
-		BorderWidth:     2,
-		ShowLine:        true,
-		Togglable:       true,
 	}
-
-	FunctionMeta = FunctionChart.Meta()
 )
 
 func f(x float64) float64 {

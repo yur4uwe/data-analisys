@@ -14,14 +14,14 @@ const (
 )
 
 var (
-	LinearGraph = charting.ChartDataset{
-		Label:           "Revenue $",
-		BorderColor:     charting.ColorAmber,
-		BackgroundColor: []string{"rgba(37, 99, 235, 0.1)"},
-		PointRadius:     0,
-		BorderWidth:     2,
-		ShowLine:        true,
-		Togglable:       true,
+	LinearGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Revenue $",
+			BorderColor: charting.ToColor(charting.ColorAmber),
+			BorderWidth: 2,
+			Togglable:   true,
+		},
+		BackgroundColor: []charting.Color{charting.ToColor("rgba(37, 99, 235, 0.1)")},
 	}
 
 	LinearChart = charting.Chart{
@@ -32,12 +32,10 @@ var (
 		YAxisLabel:  "Revenue $",
 		XAxisConfig: charting.LinearAxis,
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			LinearGraphID: &LinearGraph,
 		},
 	}
-
-	LinearMeta = LinearChart.Meta()
 )
 
 type DailyRevenue struct {

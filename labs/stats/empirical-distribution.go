@@ -14,24 +14,26 @@ const (
 )
 
 var (
-	EmpiricalDistributionProgrammerGraph = charting.ChartDataset{
-		Label:           "Programmer F(x)",
-		BorderColor:     charting.ColorEmerald,
-		BackgroundColor: []string{charting.ColorTransparent},
-		ShowLine:        true,
+	EmpiricalDistributionProgrammerGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Programmer F(x)",
+			BorderColor: charting.ToColor(charting.ColorEmerald),
+			BorderWidth: 2,
+			Togglable:   true,
+		},
+		BackgroundColor: charting.ToColor(charting.ColorTransparent),
 		PointRadius:     3,
-		BorderWidth:     2,
-		Togglable:       true,
 	}
 
-	EmpiricalDistributionTesterGraph = charting.ChartDataset{
-		Label:           "Tester F(x)",
-		BorderColor:     charting.ColorLime,
-		BackgroundColor: []string{charting.ColorTransparent},
-		ShowLine:        true,
+	EmpiricalDistributionTesterGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Tester F(x)",
+			BorderColor: charting.ToColor(charting.ColorLime),
+			BorderWidth: 2,
+			Togglable:   true,
+		},
+		BackgroundColor: charting.ToColor(charting.ColorTransparent),
 		PointRadius:     3,
-		BorderWidth:     2,
-		Togglable:       true,
 	}
 
 	EmpiricalDistributionChart = charting.Chart{
@@ -42,7 +44,7 @@ var (
 		XAxisConfig: charting.LinearAxis,
 		YAxisLabel:  "F(x) - Cumulative Probability",
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			EmpiricalDistributionProgrammerID: &EmpiricalDistributionProgrammerGraph,
 			EmpiricalDistributionTesterID:     &EmpiricalDistributionTesterGraph,
 		},

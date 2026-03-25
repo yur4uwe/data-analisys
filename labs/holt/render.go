@@ -83,8 +83,9 @@ func RenderHoltTest(req *charting.RenderRequest) (res *charting.RenderResponse) 
 	copyTestChart.UpdateDataForDataset(GraphTestActualID, charting.ToAnySlice(testData))
 	copyTestChart.UpdateDataForDataset(GraphTestForecastID, charting.ToAnySlice(testForecasts))
 
-	for i := range copyTestChart.Datasets[GraphTestForecastID].GraphVariables {
-		field := &copyTestChart.Datasets[GraphTestForecastID].GraphVariables[i]
+	gvars := copyTestChart.Datasets[GraphTestForecastID].Meta()
+	for i := range gvars {
+		field := &gvars[i]
 		if strings.HasSuffix(field.ID, DisplayTestMSEID) {
 			field.Label = fmt.Sprintf("Test MSE: %.4e", testMSE)
 		} else if strings.HasSuffix(field.ID, DisplayOptimalAlphaID) {
@@ -133,9 +134,9 @@ func RenderHolt(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	copyTrainChart.Labels = trainDates
 	copyTrainChart.UpdateDataForDataset(GraphTrainActualID, charting.ToAnySlice(trainData))
 	copyTrainChart.UpdateDataForDataset(GraphTrainForecastID, charting.ToAnySlice(trainForecasts))
-
-	for i := range copyTrainChart.Datasets[GraphTrainForecastID].GraphVariables {
-		field := &copyTrainChart.Datasets[GraphTrainForecastID].GraphVariables[i]
+	gvars := copyTrainChart.Datasets[GraphTrainForecastID].Meta()
+	for i := range gvars {
+		field := &gvars[i]
 		switch field.ID {
 		case DisplayOptimalAlphaID:
 			field.Label = fmt.Sprintf("Optimal Alpha: %.4f", bestAlpha)
@@ -168,8 +169,9 @@ func RenderError(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	nAlpha := int((maxAlpha-minAlpha)/step) + 1
 	nBeta := int((maxBeta-minBeta)/step) + 1
 
-	points := make([]charting.DataPoint, nAlpha*nBeta)
+	heatmapData := make([]any, 0, nAlpha*nBeta)
 	rawValues := make([]float64, nAlpha*nBeta)
+	coords := make([]charting.DataPoint, nAlpha*nBeta)
 
 	bestAlpha, bestBeta, bestMSE := math.MaxFloat64, math.MaxFloat64, math.MaxFloat64
 
@@ -189,27 +191,29 @@ func RenderError(req *charting.RenderRequest) (res *charting.RenderResponse) {
 
 			index := i*nBeta + j
 			rawValues[index] = forecastMSE
-			points[index] = charting.DataPoint{X: alpha, Y: beta}
+			coords[index] = charting.DataPoint{X: alpha, Y: beta}
 		}
 	}
 
 	// Outlier Suppression: Cap values at 10x bestMSE to keep the heatmap gradient useful
 	capValue := bestMSE * 10
-	values := make([]any, len(rawValues))
 	for i, v := range rawValues {
+		val := v
 		if v > capValue {
-			values[i] = capValue
-		} else {
-			values[i] = v
+			val = capValue
 		}
+		heatmapData = append(heatmapData, charting.HeatmapPoint{
+			DataPoint: coords[i],
+			Value:     val,
+		})
 	}
 
 	copyChart := charting.CopyChart(OptimalChart)
-	copyChart.UpdateDataPointsForDataset(GraphErrHeatmapID, points)
-	copyChart.UpdateDataForDataset(GraphErrHeatmapID, values)
+	copyChart.UpdateDataForDataset(GraphErrHeatmapID, heatmapData)
 
-	for i := range copyChart.Datasets[GraphErrHeatmapID].GraphVariables {
-		field := &copyChart.Datasets[GraphErrHeatmapID].GraphVariables[i]
+	gvars := copyChart.Datasets[GraphErrHeatmapID].Meta()
+	for i := range gvars {
+		field := &gvars[i]
 		switch field.ID {
 		case DisplayOptimalAlphaID:
 			field.Label = fmt.Sprintf("Optimal Alpha: %.4f", bestAlpha)

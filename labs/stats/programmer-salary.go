@@ -23,11 +23,17 @@ var (
 		Label:   "Programmer salary statistics",
 	}
 
-	ProgrammerSalaryGraph = charting.ChartDataset{
-		Label:           "Programmer Salary",
-		BackgroundColor: []string{charting.ColorEmerald, charting.ColorLime, charting.ColorIndigo, charting.ColorSlate, charting.ColorFuchsia},
-		PointRadius:     0,
-		ShowLine:        true,
+	ProgrammerSalaryGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label: "Programmer Salary",
+		},
+		BackgroundColor: []charting.Color{
+			charting.ToColor(charting.ColorEmerald),
+			charting.ToColor(charting.ColorLime),
+			charting.ToColor(charting.ColorIndigo),
+			charting.ToColor(charting.ColorSlate),
+			charting.ToColor(charting.ColorFuchsia),
+		},
 	}
 
 	ProgrammerSalaryChart = charting.Chart{
@@ -38,7 +44,7 @@ var (
 		XAxisConfig: charting.LinearAxis,
 		YAxisLabel:  "people, n",
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			ProgrammerSalaryBarGraphID: &ProgrammerSalaryGraph,
 		},
 		ChartVariables: []charting.MutableField{
@@ -46,9 +52,7 @@ var (
 		},
 	}
 
-	ProgrammerSalaryMeta = ProgrammerSalaryChart.Meta()
-
-	salaryRecords = (*SalaryRecord)(nil)
+	salaryRecords = &SalaryRecord{}
 )
 
 func RenderProgrammerSalary(req *charting.RenderRequest) (res *charting.RenderResponse) {

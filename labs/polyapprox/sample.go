@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"labs/charting"
-	"labs/labs/render"
 	"labs/uncsv"
 	"math"
 	"os"
@@ -42,29 +41,30 @@ var (
 		Control: charting.ControlNoControl,
 	}
 
-	sampleDataGraph = charting.ChartDataset{
-		Label:           "Sample Data",
-		BorderColor:     charting.ColorEmerald,
-		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
+	sampleDataGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Sample Data",
+			BorderColor: charting.ToColor(charting.ColorEmerald),
+			BorderWidth: 2,
+			Togglable:   true,
+		},
+		BackgroundColor: charting.ToColor("rgba(0, 0, 0, 0.1)"),
 		PointRadius:     3,
-		BorderWidth:     2,
-		ShowLine:        false,
-		Togglable:       true,
-		GraphVariables:  []charting.MutableField{},
 	}
 
-	sampleDataApproxGraph = charting.ChartDataset{
-		Label:           "Sample Data Approximation",
-		BorderColor:     charting.ColorAmber,
-		BackgroundColor: []string{"rgba(0, 0, 0, 0.1)"},
-		BorderWidth:     2,
-		PointRadius:     0,
-		ShowLine:        true,
-		Togglable:       true,
-		GraphVariables: []charting.MutableField{
-			approxDegreeVariable,
-			coeffsDisplayVariable,
+	sampleDataApproxGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Sample Data Approximation",
+			BorderColor: charting.ToColor(charting.ColorAmber),
+			BorderWidth: 2,
+			Togglable:   true,
+			GraphVariables: []charting.MutableField{
+				approxDegreeVariable,
+				coeffsDisplayVariable,
+			},
 		},
+		BackgroundColor: charting.ToColor("rgba(0, 0, 0, 0.1)"),
+		PointRadius:     0,
 	}
 
 	SampleDataChart = charting.Chart{
@@ -75,7 +75,7 @@ var (
 		YAxisLabel:  "Y",
 		XAxisConfig: charting.LinearAxis,
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			OriginalDataID:             &sampleDataGraph,
 			sampleApproximationGraphID: &sampleDataApproxGraph,
 		},
@@ -100,14 +100,12 @@ type Points struct {
 	Y []float64 `csv:"y_noisy"`
 }
 
-func RenderSampleData(req *charting.RenderRequest) *charting.RenderResponse {
+func RenderSampleData(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	if points == nil {
 		f, err := os.Open("./data/lab_3_var_12.csv")
 		if err != nil {
 			fmt.Println("failed to open file:", err)
-			return &charting.RenderResponse{
-				Error: render.NewRenderError("failed to read sample data file"),
-			}
+			return res.NewError("failed to read sample data file")
 		}
 		defer f.Close()
 
@@ -116,9 +114,7 @@ func RenderSampleData(req *charting.RenderRequest) *charting.RenderResponse {
 		points = &Points{}
 		if err := d.Decode(points); err != nil {
 			fmt.Println("failed to decode csv:", err)
-			return &charting.RenderResponse{
-				Error: render.NewRenderError("failed to decode sample data file"),
-			}
+			return res.NewError("failed to decode sample data file")
 		}
 	}
 
@@ -132,9 +128,7 @@ func RenderSampleData(req *charting.RenderRequest) *charting.RenderResponse {
 
 	coeffs, err := SolvePolynomialFit(points.X, points.Y, int(degree))
 	if err != nil {
-		return &charting.RenderResponse{
-			Error: render.NewRenderErrorf("failed to solve polynomial fit: %v", err),
-		}
+		return res.NewErrorf("failed to solve polynomial fit: %v", err)
 	}
 
 	minX, maxX := math.Inf(1), math.Inf(-1)
@@ -163,7 +157,7 @@ func RenderSampleData(req *charting.RenderRequest) *charting.RenderResponse {
 		}
 	}
 	str.WriteString(")")
-	chartCopy.Datasets[sampleApproximationGraphID].GraphVariables[1].Label = str.String()
+	chartCopy.Datasets[sampleApproximationGraphID].UpdateVariableLabel(1, str.String())
 
 	return &charting.RenderResponse{
 		Charts: map[string]charting.Chart{

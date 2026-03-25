@@ -38,28 +38,32 @@ var (
 		Control: charting.ControlRange,
 	}
 
-	MeanCorrelationGraph = charting.ChartDataset{
-		Label:           "Relatioship between error of mean and size of sample",
-		BorderColor:     charting.ColorLightPurple,
-		BackgroundColor: []string{charting.ColorTransparent},
-		ShowLine:        true,
-		Togglable:       true,
-		PointRadius:     0,
-		GraphVariables: []charting.MutableField{
-			MeanSampleField,
+	MeanCorrelationGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Relatioship between error of mean and size of sample",
+			BorderColor: charting.ToColor(charting.ColorLightPurple),
+			BorderWidth: 2,
+			Togglable:   true,
+			GraphVariables: []charting.MutableField{
+				MeanSampleField,
+			},
 		},
+		BackgroundColor: charting.ToColor(charting.ColorTransparent),
+		PointRadius:     0,
 	}
 
-	StdDevCorrelationGraph = charting.ChartDataset{
-		Label:           "Relationship between error of stddev and size of sample",
-		BorderColor:     charting.ColorOrange,
-		BackgroundColor: []string{charting.ColorTransparent},
-		ShowLine:        true,
-		Togglable:       true,
-		PointRadius:     0,
-		GraphVariables: []charting.MutableField{
-			StdDevSampleField,
+	StdDevCorrelationGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Relationship between error of stddev and size of sample",
+			BorderColor: charting.ToColor(charting.ColorOrange),
+			BorderWidth: 2,
+			Togglable:   true,
+			GraphVariables: []charting.MutableField{
+				StdDevSampleField,
+			},
 		},
+		BackgroundColor: charting.ToColor(charting.ColorTransparent),
+		PointRadius:     0,
 	}
 
 	MaxSampleSizeField = charting.MutableField{
@@ -89,7 +93,7 @@ var (
 		XAxisConfig: charting.LogarithmicAxis,
 		YAxisLabel:  "Error",
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			MeanCorellationGraphID:   &MeanCorrelationGraph,
 			StdDevCorrelationGraphID: &StdDevCorrelationGraph,
 		},

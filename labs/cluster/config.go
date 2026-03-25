@@ -75,13 +75,15 @@ func clusterData(labels []int, centroids []charting.DataPoint, chart *charting.C
 		fmt.Printf("Average deviations for cluster %d is %.2f\n", cluster, deviations_sum/float64(len(cluster_points)))
 
 		key := fmt.Sprintf("cluster-%d", cluster)
-		chart.Datasets[key] = &charting.ChartDataset{
-			Label:           fmt.Sprintf("Cluster %d", cluster),
-			BorderColor:     colors[cluster%len(colors)],
-			BackgroundColor: []string{charting.ColorTransparent},
+		chart.Datasets[key] = &charting.GridDataset{
+			BaseDataset: charting.BaseDataset{
+				Label:       fmt.Sprintf("Cluster %d", cluster),
+				BorderColor: charting.ToColor(colors[cluster%len(colors)]),
+				BorderWidth: 2,
+			},
+			BackgroundColor: charting.ToColor(charting.ColorTransparent),
 			PointRadius:     4,
-			BorderWidth:     2,
-			PointData:       cluster_points,
+			Data:            cluster_points,
 		}
 	}
 
@@ -89,15 +91,17 @@ func clusterData(labels []int, centroids []charting.DataPoint, chart *charting.C
 	for i := range centroids {
 		centroidLabels[i] = fmt.Sprintf("Cluster %d", i)
 	}
-	chart.Datasets["centroids"] = &charting.ChartDataset{
-		Label:           "Centroids",
-		BorderColor:     "#000000",
-		BackgroundColor: []string{"#ffffff"},
+	chart.Datasets["centroids"] = &charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Centroids",
+			BorderColor: charting.ToColor("#000000"),
+			BorderWidth: 3,
+			DataLabels:  centroidLabels,
+		},
+		BackgroundColor: charting.ToColor("#ffffff"),
 		PointRadius:     12,
-		BorderWidth:     3,
 		PointStyle:      "star",
-		PointData:       centroids,
-		PointLabels:     centroidLabels,
+		Data:            centroids,
 	}
 }
 

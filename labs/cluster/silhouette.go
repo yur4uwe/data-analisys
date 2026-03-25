@@ -22,7 +22,7 @@ var SilhouetteChart = charting.Chart{
 	Type:       charting.ChartTypeMultiBar,
 	XAxisLabel: "Points (sorted by score)",
 	YAxisLabel: "Silhouette coefficient",
-	Datasets:   map[string]*charting.ChartDataset{},
+	Datasets:   map[string]charting.Dataset{},
 	ChartVariables: []charting.MutableField{
 		{
 			ID:      VariableAlgChoiseID,
@@ -194,13 +194,14 @@ func RenderSilhouette(req *charting.RenderRequest) (res *charting.RenderResponse
 			return cmp.Compare(b, a) // descending
 		})
 
-		copyChart.Datasets[datasetID] = &charting.ChartDataset{
-			Label:           fmt.Sprintf("Cluster %d", c),
+		copyChart.Datasets[datasetID] = &charting.CategoricalDataset{
+			BaseDataset: charting.BaseDataset{
+				Label:       fmt.Sprintf("Cluster %d", c),
+				BorderColor: charting.ToColor(color),
+				BorderWidth: 1,
+			},
 			Data:            charting.ToAnySlice(clusterScores[c]),
-			BorderColor:     color,
-			BackgroundColor: []string{color},
-			BorderWidth:     1,
-			PointRadius:     0,
+			BackgroundColor: []charting.Color{charting.ToColor(color)},
 		}
 	}
 

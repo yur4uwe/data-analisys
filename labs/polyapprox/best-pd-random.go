@@ -3,7 +3,6 @@ package polyapprox
 import (
 	"fmt"
 	"labs/charting"
-	"labs/labs/render"
 )
 
 const (
@@ -12,10 +11,11 @@ const (
 )
 
 var (
-	mseGraph = charting.ChartDataset{
-		Label:       "MSE vs Degree",
-		BorderColor: charting.ColorAmber,
-		ShowLine:    true,
+	mseGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "MSE vs Degree",
+			BorderColor: charting.ColorAmber,
+		},
 	}
 
 	RandomMSEChart = charting.Chart{
@@ -26,7 +26,7 @@ var (
 		YAxisLabel:  "Mean Squared Error",
 		XAxisConfig: charting.LinearAxis,
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			OriginalDataID: &mseGraph,
 		},
 		ChartVariables: ChartVariables,
@@ -35,7 +35,7 @@ var (
 	RandomMSEMetadata = RandomMSEChart.Meta()
 )
 
-func RenderRandomPolynomialMSE(req *charting.RenderRequest) *charting.RenderResponse {
+func RenderRandomPolynomialMSE(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	start, hasStart := req.GetChartVariable(RandomMSEID, IntervalStartID)
 	end, hasEnd := req.GetChartVariable(RandomMSEID, IntervalEndID)
 	step, hasStep := req.GetChartVariable(RandomMSEID, IntervalStepID)
@@ -55,16 +55,16 @@ func RenderRandomPolynomialMSE(req *charting.RenderRequest) *charting.RenderResp
 	}
 
 	if step <= 0 {
-		return &charting.RenderResponse{Error: render.NewRenderError("step must be greater than 0")}
+		return res.NewError("step must be greater than 0")
 	}
 	if start > end {
-		return &charting.RenderResponse{Error: render.NewRenderError("start interval must be less than or equal to end interval")}
+		return res.NewError("start interval must be less than or equal to end interval")
 	}
 
 	seed := int64(230420067)
 	x, y, _ := GenerateRandomSeries(start, end, step, noiseAmp, seed)
 	if len(x) == 0 {
-		return &charting.RenderResponse{Error: render.NewRenderError("no data generated with given parameters")}
+		return res.NewError("no data generated with given parameters")
 	}
 
 	maxDegree := min(len(x)-1, 45)

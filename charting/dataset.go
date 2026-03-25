@@ -1,0 +1,176 @@
+package charting
+
+import "errors"
+
+type HeatmapPoint struct {
+	DataPoint
+	Value float64 `json:"v"`
+}
+
+type Dataset interface {
+	UpdateData([]any) error
+	UpdateLabel(string)
+	UpdateVariableLabel(int, string) error
+	GetData() []any
+	Meta() []MutableField
+	Copy() Dataset
+	GetBase() *BaseDataset
+}
+
+type BaseDataset struct {
+	Label          string         `json:"label"`
+	Type           GraphType      `json:"type,omitempty"`
+	BorderColor    Color          `json:"borderColor"`
+	BorderWidth    int            `json:"borderWidth"`
+	Hidden         bool           `json:"hidden"`
+	Togglable      bool           `json:"togglable"`
+	DataLabels     []string       `json:"pointLabels,omitempty"`
+	GraphVariables []MutableField `json:"fields,omitempty"`
+}
+
+func (bd *BaseDataset) GetBase() *BaseDataset {
+	return bd
+}
+
+func (bd *BaseDataset) Meta() []MutableField {
+	return bd.GraphVariables
+}
+
+func (bd *BaseDataset) UpdateVariableLabel(idx int, str string) error {
+	if idx < 0 || idx >= len(bd.DataLabels) {
+		return errors.New("index out of range")
+	}
+	bd.DataLabels[idx] = str
+	return nil
+}
+
+func (bd *BaseDataset) UpdateLabel(new_label string) {
+	bd.Label = new_label
+}
+
+func (bd *BaseDataset) CopyBase() BaseDataset {
+	newBD := *bd
+	if bd.DataLabels != nil {
+		newBD.DataLabels = make([]string, len(bd.DataLabels))
+		copy(newBD.DataLabels, bd.DataLabels)
+	}
+	if bd.GraphVariables != nil {
+		newBD.GraphVariables = make([]MutableField, len(bd.GraphVariables))
+		copy(newBD.GraphVariables, bd.GraphVariables)
+	}
+	return newBD
+}
+
+type GridDataset struct {
+	BaseDataset
+	Data            []DataPoint `json:"pointData,omitempty"`
+	BackgroundColor Color       `json:"backgroundColor,omitempty"`
+	PointRadius     int         `json:"pointRadius,omitempty"`
+	PointStyle      string      `json:"pointStyle,omitempty"`
+	ShowLine        bool        `json:"showLine"`
+}
+
+var _ Dataset = &GridDataset{}
+
+func (gd *GridDataset) UpdateData(data []any) error {
+	gd.Data = make([]DataPoint, len(data))
+	for i, v := range data {
+		if p, ok := v.(DataPoint); ok {
+			gd.Data[i] = p
+		} else {
+			return errors.New("invalid data type for GridDataset: expected DataPoint")
+		}
+	}
+	return nil
+}
+
+func (gd *GridDataset) GetData() []any {
+	res := make([]any, len(gd.Data))
+	for i, v := range gd.Data {
+		res[i] = v
+	}
+	return res
+}
+
+func (gd *GridDataset) Copy() Dataset {
+	newGD := *gd
+	newGD.BaseDataset = gd.CopyBase()
+	if gd.Data != nil {
+		newGD.Data = make([]DataPoint, len(gd.Data))
+		copy(newGD.Data, gd.Data)
+	}
+	return &newGD
+}
+
+type CategoricalDataset struct {
+	BaseDataset
+	Data            []any   `json:"data,omitempty"`
+	BackgroundColor []Color `json:"backgroundColor,omitempty"`
+}
+
+var _ Dataset = &CategoricalDataset{}
+
+func (cd *CategoricalDataset) UpdateData(data []any) error {
+	cd.Data = data
+	return nil
+}
+
+func (cd *CategoricalDataset) GetData() []any {
+	return cd.Data
+}
+
+func (cd *CategoricalDataset) Copy() Dataset {
+	newCD := *cd
+	newCD.BaseDataset = cd.CopyBase()
+	if cd.Data != nil {
+		newCD.Data = make([]any, len(cd.Data))
+		copy(newCD.Data, cd.Data)
+	}
+	if cd.BackgroundColor != nil {
+		newCD.BackgroundColor = make([]Color, len(cd.BackgroundColor))
+		copy(newCD.BackgroundColor, cd.BackgroundColor)
+	}
+	return &newCD
+}
+
+type HeatmapDataset struct {
+	BaseDataset
+	Data            []HeatmapPoint `json:"pointData,omitempty"`
+	BackgroundColor []Color        `json:"backgroundColor,omitempty"`
+}
+
+var _ Dataset = &HeatmapDataset{}
+
+func (hd *HeatmapDataset) UpdateData(data []any) error {
+	hd.Data = make([]HeatmapPoint, len(data))
+	for i, v := range data {
+		if p, ok := v.(HeatmapPoint); ok {
+			hd.Data[i] = p
+		} else {
+			return errors.New("invalid data type for HeatmapDataset: expected HeatmapPoint")
+		}
+	}
+	return nil
+}
+
+func (hd *HeatmapDataset) GetData() []any {
+	res := make([]any, len(hd.Data))
+	for i, v := range hd.Data {
+		res[i] = v
+	}
+	return res
+}
+
+func (hd *HeatmapDataset) Copy() Dataset {
+	newHD := *hd
+	newHD.BaseDataset = hd.CopyBase()
+	if hd.Data != nil {
+		newHD.Data = make([]HeatmapPoint, len(hd.Data))
+		copy(newHD.Data, hd.Data)
+	}
+	if hd.BackgroundColor != nil {
+		newHD.BackgroundColor = make([]Color, len(hd.BackgroundColor))
+		copy(newHD.BackgroundColor, hd.BackgroundColor)
+	}
+	return &newHD
+}

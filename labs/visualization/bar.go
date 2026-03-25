@@ -14,20 +14,20 @@ const (
 )
 
 var (
-	BarGraph = charting.ChartDataset{
-		Label: "Spending",
-		BackgroundColor: []string{
-			charting.ColorAmber,
-			charting.ColorBlue,
-			charting.ColorCyan,
-			charting.ColorEmerald,
-			charting.ColorFuchsia,
+	BarGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Spending",
+			BorderColor: charting.ToColor("rgba(0, 0, 0, 0.1)"),
+			BorderWidth: 2,
+			Togglable:   true,
 		},
-		BorderColor: "rgba(0, 0, 0, 0.1)",
-		BorderWidth: 2,
-		PointRadius: 0,
-		ShowLine:    true,
-		Togglable:   true,
+		BackgroundColor: []charting.Color{
+			charting.ToColor(charting.ColorAmber),
+			charting.ToColor(charting.ColorBlue),
+			charting.ToColor(charting.ColorCyan),
+			charting.ToColor(charting.ColorEmerald),
+			charting.ToColor(charting.ColorFuchsia),
+		},
 	}
 
 	BarChart = charting.Chart{
@@ -38,12 +38,10 @@ var (
 		YAxisLabel:  "Amount Spent",
 		XAxisConfig: charting.CategoryAxis,
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			BarGraphID: &BarGraph,
 		},
 	}
-
-	BarMeta = BarChart.Meta()
 )
 
 type Spending struct {

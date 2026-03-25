@@ -22,17 +22,17 @@ var (
 		Label:   "Tester salary statistics",
 	}
 
-	TesterSalaryGraph = charting.ChartDataset{
-		Label: "Tester Salary",
-		BackgroundColor: []string{
-			charting.ColorAmber,
-			charting.ColorBlue,
-			charting.ColorCyan,
-			charting.ColorEmerald,
-			charting.ColorFuchsia,
+	TesterSalaryGraph = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			Label: "Tester Salary",
 		},
-		PointRadius: 0,
-		ShowLine:    true,
+		BackgroundColor: []charting.Color{
+			charting.ToColor(charting.ColorAmber),
+			charting.ToColor(charting.ColorBlue),
+			charting.ToColor(charting.ColorCyan),
+			charting.ToColor(charting.ColorEmerald),
+			charting.ToColor(charting.ColorFuchsia),
+		},
 	}
 
 	TesterSalaryChart = charting.Chart{
@@ -43,7 +43,7 @@ var (
 		XAxisConfig: charting.LinearAxis,
 		YAxisLabel:  "people, n",
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			TesterSalaryBarGraphID: &TesterSalaryGraph,
 		},
 		ChartVariables: []charting.MutableField{

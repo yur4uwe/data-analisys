@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"labs/charting"
-	"labs/labs/render"
 	"labs/uncsv"
 	"math"
 	"os"
@@ -23,7 +22,7 @@ var (
 		YAxisLabel:  "Mean Squared Error",
 		XAxisConfig: charting.LinearAxis,
 		YAxisConfig: charting.LinearAxis,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			OriginalDataID: &mseGraph,
 		},
 		ChartVariables: []charting.MutableField{},
@@ -32,14 +31,12 @@ var (
 	SampleMSEMetadata = SampleMSEChart.Meta()
 )
 
-func RenderSamplePolynomialMSE(req *charting.RenderRequest) *charting.RenderResponse {
+func RenderSamplePolynomialMSE(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	if points == nil {
 		f, err := os.Open("./data/lab_3_var_12.csv")
 		if err != nil {
 			fmt.Println("failed to open file:", err)
-			return &charting.RenderResponse{
-				Error: render.NewRenderError("failed to read sample data file"),
-			}
+			return res.NewError("failed to read sample data file")
 		}
 		defer f.Close()
 
@@ -48,9 +45,7 @@ func RenderSamplePolynomialMSE(req *charting.RenderRequest) *charting.RenderResp
 		points = &Points{}
 		if err := d.Decode(points); err != nil {
 			fmt.Println("failed to decode csv:", err)
-			return &charting.RenderResponse{
-				Error: render.NewRenderError("failed to decode sample data file"),
-			}
+			return res.NewError("failed to decode sample data file")
 		}
 	}
 

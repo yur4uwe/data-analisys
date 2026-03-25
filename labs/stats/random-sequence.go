@@ -17,19 +17,19 @@ var (
 		XAxisConfig: charting.LinearAxis,
 		YAxisConfig: charting.LinearAxis,
 		Type:        charting.ChartTypeScatter,
-		Datasets: map[string]*charting.ChartDataset{
+		Datasets: map[string]charting.Dataset{
 			RandomSequenceGraphID: &RandomSequenceGraph,
 		},
 	}
 
-	RandomSequenceMeta = RandomSequenceChart.Meta()
-
-	RandomSequenceGraph = charting.ChartDataset{
-		Label:           "Sequence of random numbers",
-		BorderColor:     charting.ColorAmber,
-		BackgroundColor: []string{charting.ColorAmber},
+	RandomSequenceGraph = charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Sequence of random numbers",
+			BorderColor: charting.ToColor(charting.ColorAmber),
+			Togglable:   false,
+		},
+		BackgroundColor: charting.ToColor(charting.ColorAmber),
 		PointRadius:     3,
-		Togglable:       false,
 	}
 )
 

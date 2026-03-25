@@ -5,7 +5,11 @@ This project is a Wails-based application that bridges a Go backend (performing 
 ## 🏗 Project Structure
 
 - **`/charting`**: Core Go models for the visualization adapter.
-  - `chart.go`: Defines `Chart`, `ChartDataset`, and `DataPoint`.
+  - `chart.go`: Defines `Chart` and `DataPoint`.
+  - `dataset.go`: Defines the `Dataset` interface and concrete types:
+    - `GridDataset`: For Scatter, Line, and Bubble charts (uses `DataPoint`).
+    - `CategoricalDataset`: For Bar and Pie charts (uses `[]any` for values).
+    - `HeatmapDataset`: For Heatmaps (uses `HeatmapPoint`).
   - `render.go`: Defines `RenderRequest` and `RenderResponse`.
 - **`/labs`**: Scientific implementations.
   - Each sub-package (e.g., `cluster`, `stats`) contains a `RenderFunc` that maps raw data to the `charting` models.
@@ -47,11 +51,16 @@ Designed for comparisons (e.g., Silhouette plots where each cluster needs its ow
 
 ## 🛠 Adapter Safety & Best Practices
 
+- **Typed Datasets**: Always instantiate the correct dataset type for your chart:
+  - Use `GridDataset` when you have `{x, y}` coordinates.
+  - Use `CategoricalDataset` when you have indexed values corresponding to `chart.Labels`.
+  - Use `HeatmapDataset` for 3D data visualizations.
 - **Labels & length**: Always use `Array.isArray(labels) && labels.length > 0` before processing. The frontend is defensive against `null` labels from the backend.
 - **Datalabels Plugin**: 
-  - For **Scatter**: Uses `PointLabels` for per-point tooltips/labels.
+  - For **Scatter**: Uses `DataLabels` for per-point tooltips/labels.
   - For **Pie/Doughnut**: Automatically calculates and displays percentages.
-  - For **Bar**: Usually disabled globally to prevent clutter, unless `PointLabels` are explicitly provided.
+  - For **Bar**: Usually disabled globally to prevent clutter, unless `DataLabels` are explicitly provided.
+- **Colors**: Use `charting.ToColor("#hex")` to ensure color strings are wrapped in the `Color` type.
 - **Responsive Height**: All charts use `maintainAspectRatio: false`. The parent container must have a `min-height` (defined in `style.css` as 500px for single and 400px for multi-wrappers) to prevent vertical squishing.
 - **Coordinate Systems**: 
   - Use `charting.LinearAxis` for Scatter/Bubble.
@@ -60,7 +69,7 @@ Designed for comparisons (e.g., Silhouette plots where each cluster needs its ow
 ## 🧬 Architecture & Data Integrity
 
 ### 1. Handling Missing Data (The `null` pattern)
-- **`[]any` over `[]float64`**: The `ChartDataset.Data` field uses `[]any` to allow `nil` values.
+- **`[]any` over `[]float64`**: The `CategoricalDataset.Data` field uses `[]any` to allow `nil` values.
 - **Visual Integrity**: Always use `nil` for indices where data is unavailable (e.g., early forecasting steps). This prevents Chart.js from jumping to `0`, which skews the Y-axis.
 - **Conversion**: Use `charting.ToAnySlice(data []float64)` to safely convert standard slices for the adapter.
 

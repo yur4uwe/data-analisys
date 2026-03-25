@@ -1,5 +1,17 @@
 package charting
 
+import (
+	"fmt"
+	"regexp"
+	"strings"
+)
+
+// DataPoint represents a point with x and y coordinates for scatter/bubble charts
+type DataPoint struct {
+	X float64 `json:"x" csv:"x"`
+	Y float64 `json:"y" csv:"y"`
+}
+
 // FieldControl specifies what UI element should render a field
 // Values correspond directly to HTML input types
 type FieldControl string
@@ -13,27 +25,23 @@ const (
 	ControlNoControl FieldControl = "nocontrol" // Special case for displaying a label only
 )
 
-type ChartType string
+type GraphType string
 
 const (
-	ChartTypeLine    ChartType = "line"
-	ChartTypeBar     ChartType = "bar"
-	ChartTypeScatter ChartType = "scatter"
-	ChartTypeBubble  ChartType = "bubble"
-	ChartTypePie     ChartType = "pie"
-	ChartTypeHeatmap ChartType = "heatmap"
+	ChartTypeLine    GraphType = "line"
+	ChartTypeBar     GraphType = "bar"
+	ChartTypeScatter GraphType = "scatter"
+	ChartTypeBubble  GraphType = "bubble"
+	ChartTypePie     GraphType = "pie"
+	ChartTypeHeatmap GraphType = "heatmap"
 
-	ChartTypeMultiLine    ChartType = "multi-line"
-	ChartTypeMultiBar     ChartType = "multi-bar"
-	ChartTypeMultiScatter ChartType = "multi-scatter"
-	ChartTypeMultiBubble  ChartType = "multi-bubble"
-	ChartTypeMultiPie     ChartType = "multi-pie"
-	ChartTypeMultiHeatmap ChartType = "multi-heatmap"
+	ChartTypeMultiLine    GraphType = "multi-line"
+	ChartTypeMultiBar     GraphType = "multi-bar"
+	ChartTypeMultiScatter GraphType = "multi-scatter"
+	ChartTypeMultiBubble  GraphType = "multi-bubble"
+	ChartTypeMultiPie     GraphType = "multi-pie"
+	ChartTypeMultiHeatmap GraphType = "multi-heatmap"
 )
-
-func Multi(ct ChartType) ChartType {
-	return ChartType("multi-" + string(ct))
-}
 
 type AxisConfig string
 
@@ -43,6 +51,40 @@ const (
 	TimeAxis        AxisConfig = "time"
 	CategoryAxis    AxisConfig = "category"
 )
+
+type Color string
+
+func isHex(c byte) bool {
+	if c >= '0' && c <= '9' {
+		return true
+	}
+	l := c | 32
+	return l >= 'a' && l <= 'f'
+}
+
+func ToColor(colorlike string) Color {
+	if strings.HasPrefix(colorlike, "#") {
+		if len(colorlike) != 7 {
+			panic(fmt.Sprintf("cannot turn %s into hex color with length %d", colorlike, len(colorlike)))
+		}
+		for i := range 6 {
+			if !isHex(colorlike[i+1]) {
+				panic(fmt.Sprintf("cannot turn %q into a hex color, character at index %d isn't hex valid"))
+			}
+		}
+		return Color(colorlike)
+	} else if strings.HasPrefix(colorlike, "rgb") {
+		colorRegex := regexp.MustCompile(`(?i)rgba?\(\s*\d{1,3}\s*(?:,\s*\d{1,3}\s*){2}(?:,\s*(?:\d*\.)?\d+\s*)?\)`)
+		if !colorRegex.Match([]byte(colorlike)) {
+			panic(fmt.Sprintf("failed to parse %q with an rgba regex"))
+		}
+
+		return Color(colorlike)
+
+	} else {
+		panic(fmt.Sprintf("impossible to turn %q into color", colorlike))
+	}
+}
 
 const (
 	ColorBlue        = "#1d4ed8"

@@ -40,10 +40,11 @@ var (
 		YAxisConfig: charting.LinearAxis,
 	}
 
-	ErrorGraphBase = charting.ChartDataset{
-		BackgroundColor: []string{charting.ColorAmber},
-		BorderWidth:     0,
-		PointRadius:     0,
+	ErrorGraphBase = charting.CategoricalDataset{
+		BaseDataset: charting.BaseDataset{
+			BorderWidth: 0,
+		},
+		BackgroundColor: []charting.Color{charting.ToColor(charting.ColorAmber)},
 	}
 )
 
@@ -170,8 +171,8 @@ func RenderWinSizeErrChart(req *charting.RenderRequest) (res *charting.RenderRes
 	return res
 }
 
-func createErrorDatasets(metrics map[string][]any) map[string]*charting.ChartDataset {
-	datasets := make(map[string]*charting.ChartDataset)
+func createErrorDatasets(metrics map[string][]any) map[string]charting.Dataset {
+	datasets := make(map[string]charting.Dataset)
 
 	names := map[string]string{
 		GraphMinErrID: "Min Error",
@@ -195,8 +196,8 @@ func createErrorDatasets(metrics map[string][]any) map[string]*charting.ChartDat
 		ds := ErrorGraphBase
 		ds.Label = names[id]
 		ds.Data = data
-		ds.BackgroundColor = []string{colors[id]}
-		ds.PointLabels = toPointLabels(data)
+		ds.BackgroundColor = []charting.Color{charting.ToColor(colors[id])}
+		ds.DataLabels = toPointLabels(data)
 		datasets[id] = &ds
 	}
 
