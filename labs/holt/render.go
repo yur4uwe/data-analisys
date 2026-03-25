@@ -87,6 +87,10 @@ func RenderHoltTest(req *charting.RenderRequest) (res *charting.RenderResponse) 
 		field := &copyTestChart.Datasets[GraphTestForecastID].GraphVariables[i]
 		if strings.HasSuffix(field.ID, DisplayTestMSEID) {
 			field.Label = fmt.Sprintf("Test MSE: %.4e", testMSE)
+		} else if strings.HasSuffix(field.ID, DisplayOptimalAlphaID) {
+			field.Label = fmt.Sprintf("Alpha Used: %.4f", bestAlpha)
+		} else if strings.HasSuffix(field.ID, DisplayOptimalBetaID) {
+			field.Label = fmt.Sprintf("Beta Used: %.4f", bestBeta)
 		}
 	}
 

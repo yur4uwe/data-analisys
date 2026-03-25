@@ -48,7 +48,7 @@ var (
 	VariableLearningRate = charting.MutableField{
 		ID:      VariableLearningRateID,
 		Label:   "Learning Rate",
-		Default: 1.0,
+		Default: 10.0,
 		Min:     0.01,
 		Max:     100.0,
 		Step:    0.01,
@@ -116,6 +116,8 @@ var (
 		Togglable:       true,
 		GraphVariables: []charting.MutableField{
 			TestMSEField,
+			OptimalAlphaField,
+			OptimalBetaField,
 		},
 	}
 
