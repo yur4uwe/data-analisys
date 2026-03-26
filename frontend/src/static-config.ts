@@ -1,5 +1,6 @@
 import { charting } from "../wailsjs/go/models";
 import { getDataLabels } from "./chart-render";
+import { Dataset, isHeatmapDataset } from "./types";
 
 export const defaultChartOptions = (title: string, chartType?: string) => ({
 	responsive: true,
@@ -114,24 +115,24 @@ function hexToRgb(hex: string) {
 	};
 }
 
-export const processDataset = (hasScales: boolean, chartType: string) => (dataset: charting.ChartDataset) => {
+export const processDataset = (chartType: string) => (dataset: Dataset) => {
 	if (!dataset) return { label: "unknown", data: [] };
 
 	let data: any;
 	const isHeatmap = chartType === "heatmap" || chartType === "multi-heatmap";
 
-	if (isHeatmap && dataset.pointData && dataset.data) {
-		// Zip PointData (coordinates) and Data (values) for heatmap
-		const values = (dataset.data || []).map(v => Number(v));
-		const min = Math.min(...values);
-		const max = Math.max(...values);
-		const range = max - min || 1;
-
-		data = dataset.pointData.map((p, i) => ({
+	if (isHeatmap && isHeatmapDataset(dataset)) {
+		// Use pointData for heatmaps
+		data = dataset.pointData.map((p) => ({
 			x: p.x,
 			y: p.y,
-			v: values[i] ?? 0,
+			v: p.v,
 		}));
+
+		const valuesOnly = data.map((d: any) => d.v);
+		const min = Math.min(...valuesOnly);
+		const max = Math.max(...valuesOnly);
+		const range = max - min || 1;
 
 		const colors = (dataset.backgroundColor && dataset.backgroundColor.length > 0)
 			? dataset.backgroundColor
@@ -172,35 +173,29 @@ export const processDataset = (hasScales: boolean, chartType: string) => (datase
 		};
 	}
 
-	// For pie/doughnut/polarArea charts, use simple array values
-	if (!hasScales && dataset.data) {
-		data = dataset.data;
-	}
-	// For charts with scales, use pointData y-values or data array
-	else if (dataset.pointData) {
-		data = dataset.pointData;
-	} else if (dataset.data) {
+	// For standard datasets (Grid or Categorical)
+	if ("data" in dataset) {
 		data = dataset.data;
 	} else {
 		console.warn(`Empty data in dataset ${dataset.label}`);
 		data = [];
 	}
 
-	const datalabels = getDataLabels(dataset.pointLabels, chartType as any);
+	const datalabels = getDataLabels(dataset.dataLabels, chartType as any);
 
 	return {
 		label: dataset.label || "Unnamed dataset",
 		data: data,
 		borderColor: dataset.borderColor || "#000000",
-		backgroundColor: dataset.backgroundColor ?? dataset.borderColor ?? "#000000",
-		tension: dataset.tension ?? 0,
-		fill: dataset.fill ?? false,
+		backgroundColor: (dataset as any).backgroundColor ?? dataset.borderColor ?? "#000000",
+		tension: (dataset as any).tension ?? 0,
+		fill: (dataset as any).fill ?? false,
 		hidden: dataset.hidden ?? false,
-		pointRadius: dataset.pointRadius ?? 0,
+		pointRadius: (dataset as any).pointRadius ?? 0,
 		borderWidth: dataset.borderWidth ?? 2,
-		showLine: dataset.showLine !== false,
+		showLine: !(dataset as any).hideLine !== false,
 		togglable: dataset.togglable !== false,
-		pointStyle: dataset.pointStyle ?? undefined,
+		pointStyle: (dataset as any).pointStyle ?? undefined,
 		datalabels: datalabels,
 	};
 }

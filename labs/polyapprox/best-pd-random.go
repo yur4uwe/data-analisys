@@ -15,6 +15,7 @@ var (
 		BaseDataset: charting.BaseDataset{
 			Label:       "MSE vs Degree",
 			BorderColor: charting.ColorAmber,
+			BorderWidth: 2,
 		},
 	}
 
@@ -87,11 +88,9 @@ func RenderRandomPolynomialMSE(req *charting.RenderRequest) (res *charting.Rende
 	chartCopy := charting.CopyChart(RandomMSEChart)
 	chartCopy.UpdatePointsForDataset(OriginalDataID, degrees, errs)
 
-	return &charting.RenderResponse{
-		Charts: map[string]charting.Chart{
-			RandomMSEID: chartCopy,
-		},
-	}
+	res = charting.NewRenderResponse()
+	res.AddChart(RandomMSEID, &chartCopy)
+	return res
 }
 
 // Uses Horner's method for evaluating polynomials.

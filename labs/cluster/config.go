@@ -84,6 +84,7 @@ func clusterData(labels []int, centroids []charting.DataPoint, chart *charting.C
 			BackgroundColor: charting.ToColor(charting.ColorTransparent),
 			PointRadius:     4,
 			Data:            cluster_points,
+			HideLine:        true,
 		}
 	}
 
@@ -102,6 +103,7 @@ func clusterData(labels []int, centroids []charting.DataPoint, chart *charting.C
 		PointRadius:     12,
 		PointStyle:      "star",
 		Data:            centroids,
+		HideLine:        true,
 	}
 }
 

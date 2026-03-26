@@ -24,7 +24,7 @@ type BaseDataset struct {
 	BorderWidth    int            `json:"borderWidth"`
 	Hidden         bool           `json:"hidden"`
 	Togglable      bool           `json:"togglable"`
-	DataLabels     []string       `json:"pointLabels,omitempty"`
+	DataLabels     []string       `json:"dataLabels,omitempty"`
 	GraphVariables []MutableField `json:"fields,omitempty"`
 }
 
@@ -63,11 +63,11 @@ func (bd *BaseDataset) CopyBase() BaseDataset {
 
 type GridDataset struct {
 	BaseDataset
-	Data            []DataPoint `json:"pointData,omitempty"`
+	Data            []DataPoint `json:"data,omitempty"`
 	BackgroundColor Color       `json:"backgroundColor,omitempty"`
 	PointRadius     int         `json:"pointRadius,omitempty"`
 	PointStyle      string      `json:"pointStyle,omitempty"`
-	ShowLine        bool        `json:"showLine"`
+	HideLine        bool        `json:"hideLine"`
 }
 
 var _ Dataset = &GridDataset{}

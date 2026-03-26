@@ -126,6 +126,7 @@ func CalculateMedian(data []float64) float64 {
 }
 
 func salariesFor(position PositionType) []float64 {
+	fmt.Printf("salary records length %v", salaryRecords)
 	if salaryRecords == nil {
 		return nil
 	}

@@ -26,6 +26,7 @@ var (
 	ProgrammerSalaryGraph = charting.CategoricalDataset{
 		BaseDataset: charting.BaseDataset{
 			Label: "Programmer Salary",
+			Type:  charting.ChartTypeBar,
 		},
 		BackgroundColor: []charting.Color{
 			charting.ToColor(charting.ColorEmerald),
@@ -41,7 +42,7 @@ var (
 		Title:       "Programmer Salary",
 		Type:        charting.ChartTypeBar,
 		XAxisLabel:  "amount, $",
-		XAxisConfig: charting.LinearAxis,
+		XAxisConfig: charting.CategoryAxis,
 		YAxisLabel:  "people, n",
 		YAxisConfig: charting.LinearAxis,
 		Datasets: map[string]charting.Dataset{
@@ -56,7 +57,7 @@ var (
 )
 
 func RenderProgrammerSalary(req *charting.RenderRequest) (res *charting.RenderResponse) {
-	if salaryRecords == nil {
+	if len(salaryRecords.ID) == 0 {
 		f, err := os.Open("./data/lab_5_var_12.csv")
 		if err != nil {
 			return res.NewErrorf("programmer salary chart: error while reading file: %s", err.Error())

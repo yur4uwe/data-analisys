@@ -11,6 +11,7 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 import { EventsOn } from "../wailsjs/runtime";
 import { renderMultiChart, renderChartInto } from "./chart-render";
 import { registry } from "./registry";
+import { SafeChart } from "./types";
 
 Chart.register(...registerables, ChartDataLabels);
 
@@ -46,7 +47,7 @@ EventsOn("renderComplete", (data: charting.RenderResponse) => {
   } else {
     console.log("Render completed successfully,", window.activeChartId);
 
-    const activeChartData = data.charts[window.activeChartId!];
+    const activeChartData = data.charts[window.activeChartId!] as unknown as SafeChart;
 
 
     if (activeChartData.type.startsWith("multi-")) {

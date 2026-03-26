@@ -69,7 +69,7 @@ func buildEDF(salaries []float64) (x, y []float64) {
 }
 
 func RenderEmpiricalDistribution(req *charting.RenderRequest) (res *charting.RenderResponse) {
-	if salaryRecords == nil {
+	if len(salaryRecords.ID) == 0 {
 		f, err := os.Open("./data/lab_5_var_12.csv")
 		if err != nil {
 			return res.NewErrorf("empirical distribution chart: error while reading file: %s", err.Error())

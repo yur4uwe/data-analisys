@@ -6,6 +6,7 @@ import {
   RerenderEvent,
 } from "./events";
 import { registry } from "./registry";
+import { SafeChart } from "./types";
 
 export function buildInputFieldName(
   chartId: string,
@@ -78,7 +79,7 @@ function CreateInput(
   parentElement.appendChild(fieldInput);
 }
 
-export function updateAllFieldLabels(chart: charting.Chart) {
+export function updateAllFieldLabels(chart: SafeChart) {
   if (!chart) {
     return;
   }

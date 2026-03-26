@@ -4,6 +4,7 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 import ZoomPlugin from "chartjs-plugin-zoom";
 import { charting } from "../wailsjs/go/models";
 import { defaultChartOptions, newScales, processDataset } from "./static-config";
+import { SafeChart } from "./types";
 
 Chart.register(MatrixController, MatrixElement, ChartDataLabels, ZoomPlugin);
 
@@ -37,7 +38,7 @@ const heatmapLegendPlugin = {
     const values = dataset.data.map((d: any) => d.v);
     const min = Math.min(...values);
     const max = Math.max(...values);
-    
+
     // Find the colors used for the heatmap (need to reach back to the processDataset logic or re-calculate)
     // For simplicity, we'll assume the interpolateColor logic is accessible or we use the colors from the dataset config if we can store them.
     // Since we can't easily import from static-config here without circular deps, 
@@ -52,7 +53,7 @@ const heatmapLegendPlugin = {
     // Draw gradient bar
     const gradient = ctx.createLinearGradient(x, 0, x + legendWidth, 0);
     const gamma = 0.3; // Match the sensitivity in static-config.ts
-    
+
     // Add more stops to simulate the power curve
     const numStops = 10;
     for (let i = 0; i <= numStops; i++) {
@@ -62,17 +63,17 @@ const heatmapLegendPlugin = {
       // So at position 't' on the legend, we want the color for value 't^gamma'
       // Wait, let's just draw the colors at their actual mapped positions
       const mappedT = Math.pow(t, gamma);
-      
+
       // Since our interpolateColor logic is in static-config.ts and hard to access here,
       // we interpolate between the first and last colors directly for the legend.
       // If we have more than 2 colors, we'd need a more complex loop.
       const startColor = hexToRgb(colors[0]);
       const endColor = hexToRgb(colors[colors.length - 1]);
-      
+
       const r = Math.round(startColor.r + (endColor.r - startColor.r) * mappedT);
       const g = Math.round(startColor.g + (endColor.g - startColor.g) * mappedT);
       const b = Math.round(startColor.b + (endColor.b - startColor.b) * mappedT);
-      
+
       gradient.addColorStop(t, `rgb(${r},${g},${b})`);
     }
 
@@ -108,15 +109,15 @@ if (!window.chartInstances) {
 }
 
 export function getDataLabels(
-  pointLabels: string[] | undefined,
+  dataLabels: string[] | undefined,
   chartType: keyof ChartTypeRegistry,
 ) {
-  if (Array.isArray(pointLabels) && pointLabels.length > 0) {
+  if (Array.isArray(dataLabels) && dataLabels.length > 0) {
     return {
       display: true,
       formatter: (_: any, ctx: any) => {
-        if (!pointLabels || ctx.dataIndex >= pointLabels.length) return "";
-        return pointLabels[ctx.dataIndex] ?? "";
+        if (!dataLabels || ctx.dataIndex >= dataLabels.length) return "";
+        return dataLabels[ctx.dataIndex] ?? "";
       },
       anchor: "end" as const,
       align: "top" as const,
@@ -158,7 +159,7 @@ export function getDataLabels(
   }
 }
 
-export function renderChartInto(chartConfig: charting.Chart, container: HTMLElement) {
+export function renderChartInto(chartConfig: SafeChart, container: HTMLElement) {
   if (!chartConfig) {
     console.error("renderChartInto: chartConfig is null or undefined!");
     return;
@@ -186,7 +187,7 @@ export function renderChartInto(chartConfig: charting.Chart, container: HTMLElem
   let chartLabels: string[] = Array.isArray(chartConfig.labels) ? chartConfig.labels : [];
 
   // Process datasets based on chart type
-  const processedDatasets = Object.values(chartConfig.datasets || {}).map(processDataset(hasScales, chartType));
+  const processedDatasets = Object.values(chartConfig.datasets || {}).map(processDataset(chartType));
 
   let maxDataLength = 0
 
@@ -236,7 +237,7 @@ export function renderChartInto(chartConfig: charting.Chart, container: HTMLElem
   }
 }
 
-export function renderMultiChart(chartConfig: charting.Chart) {
+export function renderMultiChart(chartConfig: SafeChart) {
   if (!chartConfig || !chartConfig.datasets) {
     console.error("renderMultiChart: chartConfig or datasets is missing");
     return;
@@ -270,19 +271,19 @@ export function renderMultiChart(chartConfig: charting.Chart) {
 
     // Each cluster should ideally have its own labels matching its data length
     let clusterLabels = labels;
-    if (!labels && dataset.pointLabels && dataset.pointLabels.length > 0) {
-      clusterLabels = dataset.pointLabels;
+    if (!labels && (dataset as any).dataLabels && (dataset as any).dataLabels.length > 0) {
+      clusterLabels = (dataset as any).dataLabels;
     }
 
     // Synthetic single-dataset chart reusing all config from parent
-    const syntheticChart: charting.Chart = charting.Chart.createFrom({
+    const syntheticChart = charting.Chart.createFrom({
       ...chartConfig,
       labels: clusterLabels,
       type: singleType,
       id: `${chartConfig.id}-${datasetId}`,
       title: dataset.label || datasetId,
       datasets: { [datasetId]: dataset },
-    });
+    }) as unknown as SafeChart;
 
     renderChartInto(syntheticChart, wrapper);
   });

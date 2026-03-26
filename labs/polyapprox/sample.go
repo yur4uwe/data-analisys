@@ -44,12 +44,14 @@ var (
 	sampleDataGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
 			Label:       "Sample Data",
+			Type:        charting.ChartTypeScatter,
 			BorderColor: charting.ToColor(charting.ColorEmerald),
 			BorderWidth: 2,
 			Togglable:   true,
 		},
 		BackgroundColor: charting.ToColor("rgba(0, 0, 0, 0.1)"),
 		PointRadius:     3,
+		HideLine:        true,
 	}
 
 	sampleDataApproxGraph = charting.GridDataset{

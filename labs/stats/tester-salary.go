@@ -40,7 +40,7 @@ var (
 		Title:       "Tester Salary Distribution",
 		Type:        charting.ChartTypeBar,
 		XAxisLabel:  "amount, $",
-		XAxisConfig: charting.LinearAxis,
+		XAxisConfig: charting.CategoryAxis,
 		YAxisLabel:  "people, n",
 		YAxisConfig: charting.LinearAxis,
 		Datasets: map[string]charting.Dataset{

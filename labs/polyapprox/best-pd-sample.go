@@ -18,6 +18,7 @@ var (
 	SampleMSEChart = charting.Chart{
 		ID:          SampleMSEID,
 		Title:       "MSE vs Degree (CSV)",
+		Type:        charting.ChartTypeLine,
 		XAxisLabel:  "Polynomial Degree",
 		YAxisLabel:  "Mean Squared Error",
 		XAxisConfig: charting.LinearAxis,
@@ -25,7 +26,6 @@ var (
 		Datasets: map[string]charting.Dataset{
 			OriginalDataID: &mseGraph,
 		},
-		ChartVariables: []charting.MutableField{},
 	}
 
 	SampleMSEMetadata = SampleMSEChart.Meta()
@@ -66,16 +66,14 @@ func RenderSamplePolynomialMSE(req *charting.RenderRequest) (res *charting.Rende
 		errs = append(errs, CalculateMSE(points.X, points.Y, coeffs))
 	}
 
-	chartCopy := charting.CopyChart(RandomMSEChart)
+	chartCopy := charting.CopyChart(SampleMSEChart)
 	chartCopy.UpdatePointsForDataset(OriginalDataID, degrees, errs)
 
 	chartCopy.Labels = labels
 
-	return &charting.RenderResponse{
-		Charts: map[string]charting.Chart{
-			SampleMSEID: chartCopy,
-		},
-	}
+	res = charting.NewRenderResponse()
+	res.AddChart(SampleMSEID, &chartCopy)
+	return res
 }
 
 // SolvePolynomialFit finds the least squares polynomial fit of given degree.
