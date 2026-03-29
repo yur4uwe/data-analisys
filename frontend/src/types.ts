@@ -14,7 +14,7 @@ export type DataPoint = {
  * Includes a value 'v' for the intensity/color mapping.
  */
 export type HeatmapPoint = {
-    v: number
+    v: number | null
 } & DataPoint
 
 /**
@@ -37,7 +37,7 @@ export type BaseDataset = {
  * Mapped from charting.GridDataset.
  */
 export type GridDataset = BaseDataset & {
-    data: DataPoint[]
+    data: (DataPoint | null)[]
     backgroundColor: string
     pointRadius: number
     pointStyle: string
@@ -59,7 +59,7 @@ export type CategoricalDataset = BaseDataset & {
  * Uses 'pointData' as the JSON key for coordinates.
  */
 export type HeatmapDataset = BaseDataset & {
-    pointData: HeatmapPoint[]
+    pointData: (HeatmapPoint | null)[]
     backgroundColor: string[]
 }
 
@@ -89,9 +89,7 @@ export function isGridDataset(ds: Dataset): ds is GridDataset {
     return !isHeatmapDataset(ds) && 
            Array.isArray(ds.data) && 
            ds.data.length > 0 && 
-           typeof ds.data[0] === 'object' && 
-           ds.data[0] !== null &&
-           'x' in ds.data[0];
+           (ds.data[0] === null || (typeof ds.data[0] === 'object' && 'x' in ds.data[0]));
 }
 
 /**

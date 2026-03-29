@@ -6,13 +6,13 @@ import (
 	"labs/uncsv"
 	"math"
 	"os"
-	"strings"
 )
 
 const (
 	LabID = "7"
 
-	ChartForecastID = "forecast"
+	ChartForecastID          = "forecast"
+	ChartOptimalParametersID = "opt-params"
 
 	GraphOriginalDataID    = "original-data"
 	GraphTomorrowAsTodayID = "tomorrow-as-today"
@@ -158,13 +158,29 @@ var (
 		},
 	}
 
+	OptimalParametersChart = charting.Chart{
+		ID:          ChartOptimalParametersID,
+		Title:       "Optimal Parameters Forecast",
+		Type:        charting.ChartTypeLine,
+		XAxisLabel:  "Date",
+		XAxisConfig: charting.CategoryAxis,
+		YAxisLabel:  "Rate (UAH)",
+		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]charting.Dataset{
+			GraphOriginalDataID:   &OriginalDataGraph,
+			GraphSlidingAvgID:     &SlidingAvgGraph,
+			GraphExponentialAvgID: &ExponentialAvgGraph,
+		},
+	}
+
 	Config = charting.NewLabConfig(
 		LabID,
 		"Time Series Forecasting",
 		map[string]*charting.Chart{
-			ChartForecastID:     &ForecastChart,
-			ChartAlphaToErrID:   &AlphaToErrorChart,
-			ChartWinSizeToErrID: &WinSizeToErrChart,
+			ChartForecastID:          &ForecastChart,
+			ChartAlphaToErrID:        &AlphaToErrorChart,
+			ChartWinSizeToErrID:      &WinSizeToErrChart,
+			ChartOptimalParametersID: &OptimalParametersChart,
 		},
 	)
 
@@ -224,24 +240,12 @@ func updateGraphStats(dataset charting.Dataset, rates []float64, forecast []any)
 	modErr := CalculateMode(errors, 4)
 	stdErr := CalculateStdDev(errors)
 
-	gvars := dataset.Meta()
-	for i := range gvars {
-		field := gvars[i]
-		switch {
-		case strings.HasSuffix(field.ID, DisplayMinErrorID):
-			field.Label = fmt.Sprintf("Min Error: %.4f", minErr)
-		case strings.HasSuffix(field.ID, DisplayMaxErrorID):
-			field.Label = fmt.Sprintf("Max Error: %.4f", maxErr)
-		case strings.HasSuffix(field.ID, DisplayAvgErrorID):
-			field.Label = fmt.Sprintf("Avg Error: %.4f", avgErr)
-		case strings.HasSuffix(field.ID, DisplayMedianErrorID):
-			field.Label = fmt.Sprintf("Median Error: %.4f", medErr)
-		case strings.HasSuffix(field.ID, DisplayModeErrorID):
-			field.Label = fmt.Sprintf("Mode Error: %.4f", modErr)
-		case strings.HasSuffix(field.ID, DisplayStdDevErrorID):
-			field.Label = fmt.Sprintf("Std Dev: %.4f", stdErr)
-		}
-	}
+	dataset.UpdateVariableLabel(0, fmt.Sprintf("Min Error: %.4f", minErr))
+	dataset.UpdateVariableLabel(1, fmt.Sprintf("Max Error: %.4f", maxErr))
+	dataset.UpdateVariableLabel(2, fmt.Sprintf("Avg Error: %.4f", avgErr))
+	dataset.UpdateVariableLabel(3, fmt.Sprintf("Median Error: %.4f", medErr))
+	dataset.UpdateVariableLabel(4, fmt.Sprintf("Mode Error: %.4f", modErr))
+	dataset.UpdateVariableLabel(5, fmt.Sprintf("Std Dev: %.4f", stdErr))
 }
 
 func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderResponse) {
@@ -302,8 +306,6 @@ func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderRespons
 	copyChart.UpdateDataForDataset(GraphSimpleAvgID, simpleAvgForecast)
 	updateGraphStats(copyChart.Datasets[GraphSimpleAvgID], rates, simpleAvgForecast)
 
-	fmt.Println("Simple avg forecast:", simpleAvgForecast)
-
 	// 5. Sliding Average
 	slidingForecast := make([]any, n)
 	win := int(slidingWindow)
@@ -333,8 +335,82 @@ func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderRespons
 	return res
 }
 
+func RenderOptimal(req *charting.RenderRequest) (res *charting.RenderResponse) {
+	if err := loadExchageHistory(); err != nil {
+		return res.NewError(err.Error())
+	}
+
+	rates := exchangeRateData.ExchangeRate
+	n := len(rates)
+	if n < 2 {
+		return res.NewError("not enough data for forecasting")
+	}
+
+	// 1. Find optimal window size
+	bestWin := 1
+	minWinMSE := math.MaxFloat64
+	var bestSlidingForecast []any
+
+	for win := 1; win <= 30; win++ { // Max window 30
+		slidingForecast := make([]any, n)
+		slidingForecast[0] = rates[0]
+		for i := 1; i < n; i++ {
+			limit := min(i, win)
+			slidingForecast[i] = slidingAvg(rates[:i], limit)
+		}
+		mse := CalculateMSE(rates, slidingForecast)
+		if mse < minWinMSE {
+			minWinMSE = mse
+			bestWin = win
+			bestSlidingForecast = slidingForecast
+		}
+		fmt.Printf("Sliding window: win size = %d, MSE = %.5f\n", win, mse)
+	}
+
+	// 2. Find optimal alpha
+	bestAlpha := 0.01
+	minAlphaMSE := math.MaxFloat64
+	var bestExpForecast []any
+
+	for a := 1; a <= 99; a++ {
+		alpha := float64(a) / 100.0
+		expForecast := make([]any, n)
+		expForecast[0] = rates[0] // Initial seed
+		for i := 1; i < n; i++ {
+			expForecast[i] = exponentialAvg(rates[i-1], expForecast[i-1].(float64), alpha)
+		}
+		mse := CalculateMSE(rates, expForecast)
+		if mse < minAlphaMSE {
+			minAlphaMSE = mse
+			bestAlpha = alpha
+			bestExpForecast = expForecast
+		}
+		fmt.Printf("Exponential smoothing: alpha = %f, MSE = %.5f\n", alpha, mse)
+	}
+
+	copyChart := charting.CopyChart(OptimalParametersChart)
+	copyChart.Labels = exchangeRateData.Date
+
+	copyChart.UpdateDataForDataset(GraphOriginalDataID, charting.ToAnySlice(rates))
+
+	copyChart.UpdateDataForDataset(GraphSlidingAvgID, bestSlidingForecast)
+	slidingDs := copyChart.Datasets[GraphSlidingAvgID]
+	slidingDs.UpdateLabel(fmt.Sprintf("Opt. Sliding Avg (n=%d, MSE=%.4f)", bestWin, minWinMSE))
+	updateGraphStats(slidingDs, rates, bestSlidingForecast)
+
+	copyChart.UpdateDataForDataset(GraphExponentialAvgID, bestExpForecast)
+	expDs := copyChart.Datasets[GraphExponentialAvgID]
+	expDs.UpdateLabel(fmt.Sprintf("Opt. Exp. Smoothing (α=%.2f, MSE=%.4f)", bestAlpha, minAlphaMSE))
+	updateGraphStats(expDs, rates, bestExpForecast)
+
+	res = charting.NewRenderResponse()
+	res.AddChart(ChartOptimalParametersID, &copyChart)
+	return res
+}
+
 func init() {
 	ForecastChart.RenderFunc = RenderForecasting
 	WinSizeToErrChart.RenderFunc = RenderWinSizeErrChart
 	AlphaToErrorChart.RenderFunc = RenderAlphaErrChart
+	OptimalParametersChart.RenderFunc = RenderOptimal
 }

@@ -194,6 +194,12 @@ func (p *Encoder) Encode(v any) error {
 }
 
 func parseElement(strval string, elemType reflect.Type) (any, error) {
+	if strval == "" || strval == "null" || strval == "nil" {
+		if elemType.Kind() == reflect.Pointer {
+			return nil, nil
+		}
+	}
+
 	if reflect.PointerTo(elemType).Implements(reflect.TypeFor[FieldDecoder]()) {
 		newElem := reflect.New(elemType)
 		if decoder, ok := newElem.Interface().(FieldDecoder); ok {
@@ -204,6 +210,20 @@ func parseElement(strval string, elemType reflect.Type) (any, error) {
 			return newElem.Elem().Interface(), nil
 		}
 	}
+
+	if elemType.Kind() == reflect.Pointer {
+		val, err := parseElement(strval, elemType.Elem())
+		if err != nil {
+			return nil, err
+		}
+		if val == nil {
+			return nil, nil
+		}
+		ptr := reflect.New(elemType.Elem())
+		ptr.Elem().Set(reflect.ValueOf(val))
+		return ptr.Interface(), nil
+	}
+
 	elemKind := elemType.Kind()
 
 	elemKindSizeBits := getBitSizeFromKind(elemKind)
@@ -290,6 +310,11 @@ func setValueAtIndex(fieldValue reflect.Value, index int, value any) error {
 	}
 
 	elem := fieldValue.Index(index)
+
+	if value == nil {
+		elem.Set(reflect.Zero(elem.Type()))
+		return nil
+	}
 
 	switch v := value.(type) {
 	case int64:

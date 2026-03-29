@@ -87,7 +87,7 @@ func RenderSamplePolynomialMSE(req *charting.RenderRequest) (res *charting.Rende
 	chartCopy := charting.CopyChart(SampleMSEChart)
 	chartCopy.UpdatePointsForDataset(OriginalDataID, degrees, errs)
 
-	gvars := chartCopy.Datasets[OriginalDataID].Meta()
+	gvars := chartCopy.Datasets[OriginalDataID].GetFields()
 	for i := range gvars {
 		if gvars[i].ID == BestDegreeID {
 			gvars[i].Label = fmt.Sprintf("Best Degree: %d (MSE: %.4e)", bestDegree, minMSE)

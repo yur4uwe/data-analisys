@@ -115,7 +115,7 @@ func RenderSilhouette(req *charting.RenderRequest) (res *charting.RenderResponse
 		num_centroids = VariableNumCentroids.Default
 	}
 	if algChoice == 1 {
-		fmt.Println("\n\nSIMPLE ALGORITHM DETECTED, setting amount of initial centroids to 1\n\n")
+		fmt.Print("\n\nSIMPLE ALGORITHM DETECTED, setting amount of initial centroids to 1\n\n")
 		num_centroids = 1
 	}
 	threshold, ok := req.GetChartVariable(SilhouetteChartID, VariableThresholdID)
@@ -200,7 +200,7 @@ func RenderSilhouette(req *charting.RenderRequest) (res *charting.RenderResponse
 				BorderColor: charting.ToColor(color),
 				BorderWidth: 1,
 			},
-			Data:            charting.ToAnySlice(clusterScores[c]),
+			Data:            charting.ToFloat64PtrSlice(clusterScores[c]),
 			BackgroundColor: []charting.Color{charting.ToColor(color)},
 		}
 	}

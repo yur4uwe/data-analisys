@@ -123,15 +123,16 @@ export const processDataset = (chartType: string) => (dataset: Dataset) => {
 
 	if (isHeatmap && isHeatmapDataset(dataset)) {
 		// Use pointData for heatmaps
-		data = dataset.pointData.map((p) => ({
+		data = dataset.pointData.map((p) => p ? ({
 			x: p.x,
 			y: p.y,
 			v: p.v,
-		}));
+		}) : null);
 
-		const valuesOnly = data.map((d: any) => d.v);
-		const min = Math.min(...valuesOnly);
-		const max = Math.max(...valuesOnly);
+		const validData = data.filter((d: any) => d !== null);
+		const valuesOnly = validData.map((d: any) => d.v).filter((v: any) => v !== null);
+		const min = valuesOnly.length > 0 ? Math.min(...valuesOnly) : 0;
+		const max = valuesOnly.length > 0 ? Math.max(...valuesOnly) : 1;
 		const range = max - min || 1;
 
 		const colors = (dataset.backgroundColor && dataset.backgroundColor.length > 0)
@@ -139,8 +140,8 @@ export const processDataset = (chartType: string) => (dataset: Dataset) => {
 			: ["#1d4ed8", "#b91c1c"];
 
 		// Calculate unique coordinates to determine grid size
-		const uniqueX = new Set(data.map((p: any) => p.x)).size;
-		const uniqueY = new Set(data.map((p: any) => p.y)).size;
+		const uniqueX = new Set(validData.map((p: any) => p.x)).size;
+		const uniqueY = new Set(validData.map((p: any) => p.y)).size;
 
 		return {
 			type: "matrix",

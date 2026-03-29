@@ -83,7 +83,7 @@ func RenderHoltTest(req *charting.RenderRequest) (res *charting.RenderResponse) 
 	copyTestChart.UpdateDataForDataset(GraphTestActualID, charting.ToAnySlice(testData))
 	copyTestChart.UpdateDataForDataset(GraphTestForecastID, charting.ToAnySlice(testForecasts))
 
-	gvars := copyTestChart.Datasets[GraphTestForecastID].Meta()
+	gvars := copyTestChart.Datasets[GraphTestForecastID].GetFields()
 	for i := range gvars {
 		field := &gvars[i]
 		if strings.HasSuffix(field.ID, DisplayTestMSEID) {
@@ -134,7 +134,7 @@ func RenderHolt(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	copyTrainChart.Labels = trainDates
 	copyTrainChart.UpdateDataForDataset(GraphTrainActualID, charting.ToAnySlice(trainData))
 	copyTrainChart.UpdateDataForDataset(GraphTrainForecastID, charting.ToAnySlice(trainForecasts))
-	gvars := copyTrainChart.Datasets[GraphTrainForecastID].Meta()
+	gvars := copyTrainChart.Datasets[GraphTrainForecastID].GetFields()
 	for i := range gvars {
 		field := &gvars[i]
 		switch field.ID {
@@ -206,14 +206,14 @@ func RenderError(req *charting.RenderRequest) (res *charting.RenderResponse) {
 		}
 		heatmapData = append(heatmapData, charting.HeatmapPoint{
 			DataPoint: coords[i],
-			Value:     val,
+			Value:     &val,
 		})
 	}
 
 	copyChart := charting.CopyChart(OptimalChart)
 	copyChart.UpdateDataForDataset(GraphErrHeatmapID, heatmapData)
 
-	gvars := copyChart.Datasets[GraphErrHeatmapID].Meta()
+	gvars := copyChart.Datasets[GraphErrHeatmapID].GetFields()
 	for i := range gvars {
 		field := &gvars[i]
 		switch field.ID {

@@ -43,7 +43,7 @@ func (c *Chart) Meta() ChartMetadata {
 
 	graphVars := map[string][]MutableField{}
 	for graphId, graph := range c.Datasets {
-		vars := graph.Meta()
+		vars := graph.GetFields()
 		if len(vars) == 0 {
 			graphVars[graphId] = []MutableField{}
 		}
@@ -66,7 +66,7 @@ func (c *Chart) UpdatePointsForDataset(datasetId string, x, y []float64) error {
 
 	p := make([]any, len(x))
 	for i := range x {
-		p[i] = DataPoint{
+		p[i] = &DataPoint{
 			X: x[i],
 			Y: y[i],
 		}
@@ -75,7 +75,7 @@ func (c *Chart) UpdatePointsForDataset(datasetId string, x, y []float64) error {
 	return c.Datasets[datasetId].UpdateData(p)
 }
 
-func (c *Chart) UpdateDataPointsForDataset(datasetId string, points []DataPoint) error {
+func (c *Chart) UpdateDataPointsForDataset(datasetId string, points []*DataPoint) error {
 	dataset, ok := c.Datasets[datasetId]
 	if !ok {
 		return errors.New("dataset not found in chart")
@@ -102,12 +102,30 @@ func (c *Chart) UpdateDataForDataset(datasetId string, data []any) error {
 func ToAnySlice(data []float64) []any {
 	res := make([]any, len(data))
 	for i, v := range data {
-		res[i] = v
+		val := v
+		res[i] = &val
 	}
 	return res
 }
 
-func PointsToAnySlice(data []DataPoint) []any {
+func ToFloat64PtrSlice(data []float64) []*float64 {
+	res := make([]*float64, len(data))
+	for i, v := range data {
+		val := v
+		res[i] = &val
+	}
+	return res
+}
+
+func ToDataPointPtrSlice(data []DataPoint) []*DataPoint {
+	res := make([]*DataPoint, len(data))
+	for i := range data {
+		res[i] = &data[i]
+	}
+	return res
+}
+
+func PointsToAnySlice(data []*DataPoint) []any {
 	res := make([]any, len(data))
 	for i, v := range data {
 		res[i] = v
@@ -115,13 +133,21 @@ func PointsToAnySlice(data []DataPoint) []any {
 	return res
 }
 
-func AnyToPointsSlice(data []any) []DataPoint {
-	res := make([]DataPoint, len(data))
+func AnyToPointsSlice(data []any) []*DataPoint {
+	res := make([]*DataPoint, len(data))
 	for i, v := range data {
-		if p, ok := v.(DataPoint); ok {
+		if v == nil {
+			res[i] = nil
+			continue
+		}
+		if p, ok := v.(*DataPoint); ok {
 			res[i] = p
+		} else if p, ok := v.(DataPoint); ok {
+			res[i] = &p
+		} else if hp, ok := v.(*HeatmapPoint); ok {
+			res[i] = &hp.DataPoint
 		} else if hp, ok := v.(HeatmapPoint); ok {
-			res[i] = hp.DataPoint
+			res[i] = &hp.DataPoint
 		}
 	}
 	return res
@@ -150,7 +176,11 @@ func (c *Chart) GenerateLabels(precision int) {
 	labels := make([]string, len(points))
 	format := fmt.Sprintf("%%.%df", precision)
 	for i, p := range points {
-		labels[i] = fmt.Sprintf(format, p.X)
+		if p != nil {
+			labels[i] = fmt.Sprintf(format, p.X)
+		} else {
+			labels[i] = ""
+		}
 	}
 	c.Labels = labels
 }

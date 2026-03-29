@@ -195,7 +195,7 @@ func createErrorDatasets(metrics map[string][]any) map[string]charting.Dataset {
 	for id, data := range metrics {
 		ds := ErrorGraphBase
 		ds.Label = names[id]
-		ds.Data = data
+		ds.UpdateData(data)
 		ds.BackgroundColor = []charting.Color{charting.ToColor(colors[id])}
 		ds.DataLabels = toPointLabels(data)
 		datasets[id] = &ds

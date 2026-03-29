@@ -69,14 +69,14 @@ func ToColor(colorlike string) Color {
 		}
 		for i := range 6 {
 			if !isHex(colorlike[i+1]) {
-				panic(fmt.Sprintf("cannot turn %q into a hex color, character at index %d isn't hex valid"))
+				panic(fmt.Sprintf("cannot turn %q into a hex color, character at index %d isn't hex valid", colorlike, i+1))
 			}
 		}
 		return Color(colorlike)
 	} else if strings.HasPrefix(colorlike, "rgb") {
 		colorRegex := regexp.MustCompile(`(?i)rgba?\(\s*\d{1,3}\s*(?:,\s*\d{1,3}\s*){2}(?:,\s*(?:\d*\.)?\d+\s*)?\)`)
 		if !colorRegex.Match([]byte(colorlike)) {
-			panic(fmt.Sprintf("failed to parse %q with an rgba regex"))
+			panic(fmt.Sprintf("failed to parse %q with an rgba regex", colorlike))
 		}
 
 		return Color(colorlike)
