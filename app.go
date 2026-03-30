@@ -8,6 +8,7 @@ import (
 	"labs/labs"
 	"labs/labs/cluster"
 	"labs/labs/forecasting"
+	forecastinglinparab "labs/labs/forecasting-lin-parab"
 	"labs/labs/holt"
 	"labs/labs/polyapprox"
 	"labs/labs/render"
@@ -45,6 +46,7 @@ func (a *App) startup(ctx context.Context) {
 	a.registry[cluster.LabID] = labs.NewLab6()
 	a.registry[forecasting.LabID] = labs.NewLab7()
 	a.registry[holt.LabID] = labs.NewLab8()
+	a.registry[forecastinglinparab.LabID] = labs.NewLab9()
 
 	fmt.Printf("Registered %d labs (lazy initialization)\n", len(a.registry))
 }
