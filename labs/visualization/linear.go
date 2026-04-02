@@ -59,9 +59,7 @@ func RenderLinear(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	}
 
 	chartCopy := charting.CopyChart(LinearChart)
-	if err := chartCopy.UpdateDataForDataset(LinearGraphID, charting.ToAnySlice(rec.Revenue)); err != nil {
-		return res.NewErrorf("error while updating chart dataset: %v", err)
-	}
+	chartCopy.UpdateDataForDataset(LinearGraphID, charting.ToAnySlice(rec.Revenue))
 
 	chartCopy.Labels = rec.Day
 

@@ -1,7 +1,6 @@
 package charting
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -55,13 +54,13 @@ func (c *Chart) Meta() ChartMetadata {
 	return meta
 }
 
-func (c *Chart) UpdatePointsForDataset(datasetId string, x, y []float64) error {
+func (c *Chart) UpdatePointsForDataset(datasetId string, x, y []float64) {
 	if _, ok := c.Datasets[datasetId]; !ok {
-		return errors.New("dataset not found in chart")
+		panic(fmt.Errorf("dataset not found in chart"))
 	}
 
 	if len(x) != len(y) {
-		return fmt.Errorf("x and y are of different length: %d and %d", len(x), len(y))
+		panic(fmt.Errorf("x and y are of different length: %d and %d", len(x), len(y)))
 	}
 
 	p := make([]any, len(x))
@@ -73,13 +72,13 @@ func (c *Chart) UpdatePointsForDataset(datasetId string, x, y []float64) error {
 		}
 	}
 
-	return c.Datasets[datasetId].UpdateData(p)
+	c.Datasets[datasetId].UpdateData(p)
 }
 
-func (c *Chart) UpdateDataPointsForDataset(datasetId string, points []DataPoint) error {
+func (c *Chart) UpdateDataPointsForDataset(datasetId string, points []DataPoint) {
 	dataset, ok := c.Datasets[datasetId]
 	if !ok {
-		return errors.New("dataset not found in chart")
+		panic(fmt.Errorf("dataset not found in chart"))
 	}
 
 	p := make([]any, len(points))
@@ -88,15 +87,15 @@ func (c *Chart) UpdateDataPointsForDataset(datasetId string, points []DataPoint)
 		p[i] = points[i]
 	}
 
-	return dataset.UpdateData(p)
+	dataset.UpdateData(p)
 }
 
-func (c *Chart) UpdateDataForDataset(datasetId string, data []any) error {
+func (c *Chart) UpdateDataForDataset(datasetId string, data []any) {
 	dataset, ok := c.Datasets[datasetId]
 	if !ok {
-		return errors.New("dataset not found in chart")
+		panic(fmt.Errorf("dataset not found in chart"))
 	}
-	return dataset.UpdateData(data)
+	dataset.UpdateData(data)
 }
 
 // GenerateLabels derives chart Labels from the x-values of PointData across all datasets.

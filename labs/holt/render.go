@@ -7,7 +7,6 @@ import (
 	"labs/uncsv"
 	"math"
 	"os"
-	"strings"
 )
 
 var (
@@ -80,20 +79,12 @@ func RenderHoltTest(req *charting.RenderRequest) (res *charting.RenderResponse) 
 
 	copyTestChart := charting.CopyChart(TestChart)
 	copyTestChart.Labels = testDates
-	copyTestChart.UpdateDataForDataset(GraphTestActualID, charting.ToAnySlice(testData))
-	copyTestChart.UpdateDataForDataset(GraphTestForecastID, charting.ToAnySlice(testForecasts))
+	copyTestChart.UpdateDataPointsForDataset(GraphTestActualID, charting.AnyToPointsSlice(charting.ToAnySlice(testData)))
+	copyTestChart.UpdateDataPointsForDataset(GraphTestForecastID, charting.AnyToPointsSlice(charting.ToAnySlice(testForecasts)))
 
-	gvars := copyTestChart.Datasets[GraphTestForecastID].GetFields()
-	for i := range gvars {
-		field := &gvars[i]
-		if strings.HasSuffix(field.ID, DisplayTestMSEID) {
-			field.Label = fmt.Sprintf("Test MSE: %.4e", testMSE)
-		} else if strings.HasSuffix(field.ID, DisplayOptimalAlphaID) {
-			field.Label = fmt.Sprintf("Alpha Used: %.4f", bestAlpha)
-		} else if strings.HasSuffix(field.ID, DisplayOptimalBetaID) {
-			field.Label = fmt.Sprintf("Beta Used: %.4f", bestBeta)
-		}
-	}
+	copyTestChart.Datasets[GraphTestForecastID].UpdateVariableLabel(0, fmt.Sprintf("Alpha Used: %.4f", bestAlpha))
+	copyTestChart.Datasets[GraphTestForecastID].UpdateVariableLabel(1, fmt.Sprintf("Beta Used: %.4f", bestBeta))
+	copyTestChart.Datasets[GraphTestForecastID].UpdateVariableLabel(2, fmt.Sprintf("Test MSE: %.4e", testMSE))
 
 	res = charting.NewRenderResponse()
 	res.AddChart(copyTestChart.ID, &copyTestChart)
@@ -132,20 +123,11 @@ func RenderHolt(req *charting.RenderRequest) (res *charting.RenderResponse) {
 
 	copyTrainChart := charting.CopyChart(TrainChart)
 	copyTrainChart.Labels = trainDates
-	copyTrainChart.UpdateDataForDataset(GraphTrainActualID, charting.ToAnySlice(trainData))
-	copyTrainChart.UpdateDataForDataset(GraphTrainForecastID, charting.ToAnySlice(trainForecasts))
-	gvars := copyTrainChart.Datasets[GraphTrainForecastID].GetFields()
-	for i := range gvars {
-		field := &gvars[i]
-		switch field.ID {
-		case DisplayOptimalAlphaID:
-			field.Label = fmt.Sprintf("Optimal Alpha: %.4f", bestAlpha)
-		case DisplayOptimalBetaID:
-			field.Label = fmt.Sprintf("Optimal Beta: %.4f", bestBeta)
-		case DisplayTrainMSEID:
-			field.Label = fmt.Sprintf("Train MSE: %.4e", trainMSE)
-		}
-	}
+	copyTrainChart.UpdateDataPointsForDataset(GraphTrainActualID, charting.AnyToPointsSlice(charting.ToAnySlice(trainData)))
+	copyTrainChart.UpdateDataPointsForDataset(GraphTrainForecastID, charting.AnyToPointsSlice(charting.ToAnySlice(trainForecasts)))
+	copyTrainChart.Datasets[GraphTrainForecastID].UpdateVariableLabel(0, fmt.Sprintf("Optimal Alpha: %.4f", bestAlpha))
+	copyTrainChart.Datasets[GraphTrainForecastID].UpdateVariableLabel(1, fmt.Sprintf("Optimal Beta: %.4f", bestBeta))
+	copyTrainChart.Datasets[GraphTrainForecastID].UpdateVariableLabel(2, fmt.Sprintf("Train MSE: %.4e", trainMSE))
 
 	res = charting.NewRenderResponse()
 	res.AddChart(copyTrainChart.ID, &copyTrainChart)
@@ -213,18 +195,9 @@ func RenderError(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	copyChart := charting.CopyChart(OptimalChart)
 	copyChart.UpdateDataForDataset(GraphErrHeatmapID, heatmapData)
 
-	gvars := copyChart.Datasets[GraphErrHeatmapID].GetFields()
-	for i := range gvars {
-		field := &gvars[i]
-		switch field.ID {
-		case DisplayOptimalAlphaID:
-			field.Label = fmt.Sprintf("Optimal Alpha: %.4f", bestAlpha)
-		case DisplayOptimalBetaID:
-			field.Label = fmt.Sprintf("Optimal Beta: %.4f", bestBeta)
-		case DisplayOptimalMSEID:
-			field.Label = fmt.Sprintf("Optimal MSE: %.4e", bestMSE)
-		}
-	}
+	copyChart.Datasets[GraphErrHeatmapID].UpdateVariableLabel(0, fmt.Sprintf("Optimal Alpha: %.4f", bestAlpha))
+	copyChart.Datasets[GraphErrHeatmapID].UpdateVariableLabel(1, fmt.Sprintf("Optimal Beta: %.4f", bestBeta))
+	copyChart.Datasets[GraphErrHeatmapID].UpdateVariableLabel(2, fmt.Sprintf("Optimal MSE: %.4e", bestMSE))
 
 	res = charting.NewRenderResponse()
 	res.AddChart(copyChart.ID, &copyChart)

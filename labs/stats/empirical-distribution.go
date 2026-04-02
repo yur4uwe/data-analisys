@@ -87,14 +87,10 @@ func RenderEmpiricalDistribution(req *charting.RenderRequest) (res *charting.Ren
 	copyChart := charting.CopyChart(EmpiricalDistributionChart)
 
 	px, py := buildEDF(salariesFor(Programmer))
-	if err := copyChart.UpdatePointsForDataset(EmpiricalDistributionProgrammerID, px, py); err != nil {
-		return res.NewErrorf("error updating programmer dataset: %s", err.Error())
-	}
+	copyChart.UpdatePointsForDataset(EmpiricalDistributionProgrammerID, px, py)
 
 	tx, ty := buildEDF(salariesFor(Tester))
-	if err := copyChart.UpdatePointsForDataset(EmpiricalDistributionTesterID, tx, ty); err != nil {
-		return res.NewErrorf("error updating tester dataset: %s", err.Error())
-	}
+	copyChart.UpdatePointsForDataset(EmpiricalDistributionTesterID, tx, ty)
 
 	res = charting.NewRenderResponse()
 	res.AddChart(EmpiricalDistributionChartID, &copyChart)

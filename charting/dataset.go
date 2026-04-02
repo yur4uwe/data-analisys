@@ -1,6 +1,8 @@
 package charting
 
-import "errors"
+import (
+	"fmt"
+)
 
 type HeatmapPoint struct {
 	DataPoint
@@ -8,9 +10,9 @@ type HeatmapPoint struct {
 }
 
 type Dataset interface {
-	UpdateData([]any) error
+	UpdateData([]any) // panics if data is not of the correct type
 	UpdateLabel(string)
-	UpdateVariableLabel(int, string) error
+	UpdateVariableLabel(int, string)
 	GetData() []any
 	GetFields() []MutableField
 	Copy() Dataset
@@ -36,12 +38,11 @@ func (bd *BaseDataset) GetFields() []MutableField {
 	return bd.GraphVariables
 }
 
-func (bd *BaseDataset) UpdateVariableLabel(idx int, str string) error {
+func (bd *BaseDataset) UpdateVariableLabel(idx int, str string) {
 	if idx < 0 || idx >= len(bd.GraphVariables) {
-		return errors.New("index out of range")
+		panic("index out of range")
 	}
 	bd.GraphVariables[idx].Label = str
-	return nil
 }
 
 func (bd *BaseDataset) UpdateLabel(new_label string) {
@@ -72,7 +73,7 @@ type GridDataset struct {
 
 var _ Dataset = &GridDataset{}
 
-func (gd *GridDataset) UpdateData(data []any) error {
+func (gd *GridDataset) UpdateData(data []any) {
 	gd.Data = make([]DataPoint, len(data))
 	for i, v := range data {
 		if v == nil {
@@ -88,10 +89,9 @@ func (gd *GridDataset) UpdateData(data []any) error {
 		} else if p, ok := v.(DataPoint); ok {
 			gd.Data[i] = p
 		} else {
-			return errors.New("invalid data type for GridDataset: expected *DataPoint or DataPoint")
+			panic(fmt.Errorf("invalid data type for GridDataset: expected *DataPoint or DataPoint, got %T", v))
 		}
 	}
-	return nil
 }
 
 func (gd *GridDataset) GetData() []any {
@@ -120,7 +120,7 @@ type CategoricalDataset struct {
 
 var _ Dataset = &CategoricalDataset{}
 
-func (cd *CategoricalDataset) UpdateData(data []any) error {
+func (cd *CategoricalDataset) UpdateData(data []any) {
 	cd.Data = make([]*float64, len(data))
 	for i, v := range data {
 		if v == nil {
@@ -133,10 +133,9 @@ func (cd *CategoricalDataset) UpdateData(data []any) error {
 			val := f
 			cd.Data[i] = &val
 		} else {
-			return errors.New("invalid data type for CategoricalDataset: expected *float64 or float64")
+			panic("invalid data type for CategoricalDataset: expected *float64 or float64")
 		}
 	}
-	return nil
 }
 
 func (cd *CategoricalDataset) GetData() []any {
@@ -169,7 +168,7 @@ type HeatmapDataset struct {
 
 var _ Dataset = &HeatmapDataset{}
 
-func (hd *HeatmapDataset) UpdateData(data []any) error {
+func (hd *HeatmapDataset) UpdateData(data []any) {
 	hd.Data = make([]HeatmapPoint, len(data))
 	for i, v := range data {
 		if v == nil {
@@ -181,10 +180,9 @@ func (hd *HeatmapDataset) UpdateData(data []any) error {
 		} else if p, ok := v.(HeatmapPoint); ok {
 			hd.Data[i] = p
 		} else {
-			return errors.New("invalid data type for HeatmapDataset: expected *HeatmapPoint or HeatmapPoint")
+			panic("invalid data type for HeatmapDataset: expected *HeatmapPoint or HeatmapPoint")
 		}
 	}
-	return nil
 }
 
 func (hd *HeatmapDataset) GetData() []any {

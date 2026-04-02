@@ -68,10 +68,7 @@ func RenderBarPlot(req *charting.RenderRequest) (res *charting.RenderResponse) {
 
 	chartCopy := charting.CopyChart(BarChart)
 
-	err = chartCopy.UpdateDataForDataset(BarGraphID, charting.ToAnySlice(spending.Sum))
-	if err != nil {
-		return res.NewErrorf("encountered error while updating points: %v", err)
-	}
+	chartCopy.UpdateDataForDataset(BarGraphID, charting.ToAnySlice(spending.Sum))
 
 	chartCopy.Labels = spending.Category
 

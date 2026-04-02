@@ -71,17 +71,18 @@ var (
 	TestMSEField      = charting.MutableField{ID: DisplayTestMSEID, Label: "Test MSE: -", Control: charting.ControlNoControl}
 	OptimalMSEField   = charting.MutableField{ID: DisplayOptimalMSEID, Label: "Optimal MSE: -", Control: charting.ControlNoControl}
 
-	TrainActualGraph = charting.CategoricalDataset{
+	TrainActualGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
 			Label:       "Train Data",
 			BorderColor: charting.ColorTeal,
 			BorderWidth: 2,
 			Togglable:   false,
 		},
-		BackgroundColor: []charting.Color{charting.ColorTransparent},
+		PointRadius:     2,
+		BackgroundColor: charting.ColorTransparent,
 	}
 
-	TrainForecastGraph = charting.CategoricalDataset{
+	TrainForecastGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
 			Label:       "Holt Forecast (Train)",
 			BorderColor: charting.ColorAmber,
@@ -93,20 +94,22 @@ var (
 				TrainMSEField,
 			},
 		},
-		BackgroundColor: []charting.Color{charting.ColorTransparent},
+		PointRadius:     2,
+		BackgroundColor: charting.ColorTransparent,
 	}
 
-	TestActualGraph = charting.CategoricalDataset{
+	TestActualGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
 			Label:       "Test Data",
 			BorderColor: charting.ColorTeal,
 			BorderWidth: 2,
 			Togglable:   false,
 		},
-		BackgroundColor: []charting.Color{charting.ColorTransparent},
+		PointRadius:     2,
+		BackgroundColor: charting.ColorTransparent,
 	}
 
-	TestForecastGraph = charting.CategoricalDataset{
+	TestForecastGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
 			Label:       "Holt Forecast (Test)",
 			BorderColor: charting.ColorRed,
@@ -118,7 +121,8 @@ var (
 				OptimalBetaField,
 			},
 		},
-		BackgroundColor: []charting.Color{charting.ColorTransparent},
+		PointRadius:     2,
+		BackgroundColor: charting.ColorTransparent,
 	}
 
 	HeatmapGraph = charting.HeatmapDataset{

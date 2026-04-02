@@ -67,10 +67,7 @@ func RenderRadialPlot(req *charting.RenderRequest) (res *charting.RenderResponse
 	chartCopy := charting.CopyChart(RadialChart)
 
 	// Pie charts need simple data array, not point data
-	err = chartCopy.UpdateDataForDataset(RadialGraphID, charting.ToAnySlice(rec.Sum))
-	if err != nil {
-		return res.NewErrorf("encountered error while updating data: %v", err)
-	}
+	chartCopy.UpdateDataForDataset(RadialGraphID, charting.ToAnySlice(rec.Sum))
 
 	chartCopy.Labels = rec.Sources
 

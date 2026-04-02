@@ -41,9 +41,7 @@ func RenderRandomSequence(req *charting.RenderRequest) (res *charting.RenderResp
 	}
 
 	chartCopy := charting.CopyChart(RandomSequenceChart)
-	if err := chartCopy.UpdatePointsForDataset(RandomSequenceGraphID, x, sequence); err != nil {
-		return res.NewErrorf("error updating dataset: %s", err.Error())
-	}
+	chartCopy.UpdatePointsForDataset(RandomSequenceGraphID, x, sequence)
 
 	res = charting.NewRenderResponse()
 	res.AddChart(chartCopy.ID, &chartCopy)
