@@ -88,6 +88,7 @@ func RenderHoltTest(req *charting.RenderRequest) (res *charting.RenderResponse) 
 
 	res = charting.NewRenderResponse()
 	res.AddChart(copyTestChart.ID, &copyTestChart)
+	res.CachePolicy = charting.CachePolicyDontCache
 	return res
 }
 
@@ -131,6 +132,7 @@ func RenderHolt(req *charting.RenderRequest) (res *charting.RenderResponse) {
 
 	res = charting.NewRenderResponse()
 	res.AddChart(copyTrainChart.ID, &copyTrainChart)
+	res.CachePolicy = charting.CachePolicyDontCache
 	return res
 }
 
