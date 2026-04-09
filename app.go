@@ -106,6 +106,10 @@ func (a *App) RenderSync(req *charting.RenderRequest) (res *charting.RenderRespo
 		return res.NewErrorf("lab %q not found", req.LabID)
 	}
 
+	if provider == nil {
+		return res.NewErrorf("lab %q not found", req.LabID)
+	}
+
 	res = provider.Render(req)
 	if res.Error != nil {
 		return res.NewErrorf("failed to render lab %q: %v", req.LabID, res.Error)

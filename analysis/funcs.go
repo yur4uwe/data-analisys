@@ -94,6 +94,9 @@ func MinMax(data []float64) (min, max float64) {
 }
 
 func MSE(actual []float64, calculated []float64) float64 {
+	if len(actual) != len(calculated) {
+		panic("MSE: actual and calculated slices must be of the same length")
+	}
 	var sumSq float64
 	count := 0
 	for i := 0; i < len(actual) && i < len(calculated); i++ {

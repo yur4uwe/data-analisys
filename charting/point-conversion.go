@@ -1,5 +1,7 @@
 package charting
 
+import "slices"
+
 func F64ToAny(data []float64) []any {
 	res := make([]any, len(data))
 	for i, v := range data {
@@ -16,6 +18,18 @@ func F64ToPtr(data []float64) []*float64 {
 		res[i] = &val
 	}
 	return res
+}
+
+func ExtractF64(data []*float64) []float64 {
+	res := make([]float64, 0, len(data))
+	for _, v := range data {
+		if v == nil {
+			continue
+		} else {
+			res = append(res, *v)
+		}
+	}
+	return slices.Clip(res)
 }
 
 func PointsToAny(data []DataPoint) []any {
@@ -63,11 +77,12 @@ func F64ToPoints(data []float64) []DataPoint {
 func F64PtrToPoints(data []*float64) []DataPoint {
 	res := make([]DataPoint, len(data))
 	for i, v := range data {
-		var val float64
 		if v != nil {
-			val = *v
+			val := *v
+			res[i] = DataPoint{X: float64(i), Y: &val}
+		} else {
+			res[i] = DataPoint{X: float64(i), Y: nil}
 		}
-		res[i] = DataPoint{X: float64(i), Y: &val}
 	}
 
 	return res

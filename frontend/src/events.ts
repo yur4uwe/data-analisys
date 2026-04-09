@@ -2,6 +2,7 @@ import { Chart } from "chart.js";
 import { fetchChartData } from "./fetch";
 import { registry } from "./registry";
 import { InitializeChart, InitializeLab } from "./lab-init";
+import { destroyAllCharts } from "./chart-render";
 
 export class ActiveLabChangeEvent extends Event {
   constructor(public labId: string) {
@@ -46,6 +47,10 @@ if (!window.chartInstances) {
 window.addEventListener(
   "activeChartChange",
   (event: ActiveChartChangeEvent) => {
+    // Clear all previous chart instances before switching
+    // This is the most effective way to prevent the SIGSEGV crash
+    destroyAllCharts();
+
     window.activeChartId = event.chartId;
     const error = document.getElementById("error-container");
     if (error) {

@@ -22,6 +22,46 @@ if (!window.chartInstances) {
   window.chartInstances = new Map();
 }
 
+/**
+ * Destroys all currently active Chart.js instances.
+ * Crucial for preventing WebKit SIGSEGV crashes during tab switching.
+ */
+export function destroyAllCharts() {
+  console.log("Destroying all active chart instances...");
+  window.chartInstances.forEach((chart, id) => {
+    try {
+      chart.destroy();
+    } catch (e) {
+      console.warn(`Failed to destroy chart ${id}:`, e);
+    }
+  });
+  window.chartInstances.clear();
+}
+
+/**
+ * Destroys a specific chart instance and its children (if it was part of a multi-chart).
+ */
+export function destroyPreviousChart(chartId: string) {
+  // Check for the main chart ID
+  const mainChart = window.chartInstances.get(chartId);
+  if (mainChart) {
+    mainChart.destroy();
+    window.chartInstances.delete(chartId);
+  }
+
+  // Also check for potential synthetic sub-charts (pattern: chartId-datasetId)
+  const prefix = `${chartId}-`;
+  for (const id of Array.from(window.chartInstances.keys())) {
+    if (id.startsWith(prefix)) {
+      const subChart = window.chartInstances.get(id);
+      if (subChart) {
+        subChart.destroy();
+        window.chartInstances.delete(id);
+      }
+    }
+  }
+}
+
 export function getDataLabels(
   dataLabels: string[] | undefined,
   chartType: keyof ChartTypeRegistry,
@@ -78,6 +118,9 @@ export function renderChartInto(chartConfig: SafeChart, container: HTMLElement) 
     console.error("renderChartInto: chartConfig is null or undefined!");
     return;
   }
+
+  // Destroy previous instances of this specific chart (including synthetic sub-charts)
+  destroyPreviousChart(chartConfig.id);
 
   // Clear previous content
   container.innerHTML = "";
