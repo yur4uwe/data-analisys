@@ -148,7 +148,7 @@ func RenderSampleData(req *charting.RenderRequest) (res *charting.RenderResponse
 	approx := make([]float64, 0, len(points.X))
 	appeoxX := make([]float64, 0, len(points.X))
 	for i := minX; i < maxX; i += step {
-		approx = append(approx, EvaluatePolynomial(coeffs, i))
+		approx = append(approx, analysis.EvaluatePolynomial(coeffs, i))
 		appeoxX = append(appeoxX, i)
 	}
 

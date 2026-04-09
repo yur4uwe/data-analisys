@@ -119,23 +119,6 @@ func RenderRandomPolynomialMSE(req *charting.RenderRequest) (res *charting.Rende
 	return res
 }
 
-// Uses Horner's method for evaluating polynomials.
-//
-// Formula:
-//
-//	y = (...(((a1x + a2)x + a3)x + a4) ... )x + an)
-func EvaluatePolynomial(coeffs []float64, x float64) float64 {
-	if len(coeffs) == 0 {
-		return 0
-	}
-
-	result := coeffs[len(coeffs)-1]
-	for i := len(coeffs) - 2; i >= 0; i-- {
-		result = result*x + coeffs[i]
-	}
-	return result
-}
-
 func CalculateMSE(xVals, yVals []float64, coeffs []float64) float64 {
 	if len(xVals) != len(yVals) || len(xVals) == 0 {
 		return 0
@@ -143,7 +126,7 @@ func CalculateMSE(xVals, yVals []float64, coeffs []float64) float64 {
 
 	sumSquaredError := 0.0
 	for i := range xVals {
-		predicted := EvaluatePolynomial(coeffs, xVals[i])
+		predicted := analysis.EvaluatePolynomial(coeffs, xVals[i])
 		error := yVals[i] - predicted
 		sumSquaredError += error * error
 	}

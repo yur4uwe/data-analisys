@@ -202,3 +202,9 @@ var (
 	testExchangeRateData  = &ExchangeRateHistory{}
 	trainExchangeRateData = &ExchangeRateHistory{}
 )
+
+func init() {
+	TrainChart.RenderFunc = RenderHolt
+	TestChart.RenderFunc = RenderHoltTest
+	OptimalChart.RenderFunc = RenderError
+}

@@ -17,6 +17,7 @@ type Dataset interface {
 	GetFields() []MutableField
 	Copy() Dataset
 	GetBase() *BaseDataset
+	GetType() GraphType
 }
 
 type BaseDataset struct {
@@ -28,6 +29,10 @@ type BaseDataset struct {
 	Togglable      bool           `json:"togglable"`
 	DataLabels     []string       `json:"dataLabels,omitempty"`
 	GraphVariables []MutableField `json:"fields,omitempty"`
+}
+
+func (bd *BaseDataset) GetType() GraphType {
+	return bd.Type
 }
 
 func (bd *BaseDataset) GetBase() *BaseDataset {

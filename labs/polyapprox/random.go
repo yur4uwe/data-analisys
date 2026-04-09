@@ -151,7 +151,25 @@ var (
 			SampleMSEID:  SampleMSEMetadata,
 		},
 	}
+
+	Config = charting.NewLabConfig(
+		LabID,
+		"Least Squares Approximation",
+		map[string]*charting.Chart{
+			RandomFitsID: &RandomFitsChart,
+			SampleDataID: &SampleDataChart,
+			RandomMSEID:  &RandomMSEChart,
+			SampleMSEID:  &SampleMSEChart,
+		},
+	)
 )
+
+func init() {
+	RandomFitsChart.RenderFunc = RenderRandomFits
+	SampleDataChart.RenderFunc = RenderSampleData
+	RandomMSEChart.RenderFunc = RenderRandomPolynomialMSE
+	SampleMSEChart.RenderFunc = RenderSamplePolynomialMSE
+}
 
 func RenderRandomFits(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	start, hasStart := req.GetChartVariable(RandomFitsID, IntervalStartID)
@@ -194,7 +212,7 @@ func RenderRandomFits(req *charting.RenderRequest) (res *charting.RenderResponse
 	if coefs, err := analysis.SolvePolynomialFit(x, y, 1); err == nil {
 		approx := make([]float64, 0, len(x))
 		for _, xi := range x {
-			approx = append(approx, EvaluatePolynomial(coefs, xi))
+			approx = append(approx, analysis.EvaluatePolynomial(coefs, xi))
 		}
 		mse := CalculateMSE(x, y, coefs)
 		fmt.Printf("Linear Fit MSE: %.4e\n", mse)
@@ -207,7 +225,7 @@ func RenderRandomFits(req *charting.RenderRequest) (res *charting.RenderResponse
 	if coefs, err := analysis.SolvePolynomialFit(x, y, 2); err == nil {
 		approx := make([]float64, 0, len(x))
 		for _, xi := range x {
-			approx = append(approx, EvaluatePolynomial(coefs, xi))
+			approx = append(approx, analysis.EvaluatePolynomial(coefs, xi))
 		}
 		mse := CalculateMSE(x, y, coefs)
 		fmt.Printf("Quadratic Fit MSE: %.4e\n", mse)

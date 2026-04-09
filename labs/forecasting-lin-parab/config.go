@@ -1,6 +1,7 @@
 package forecastinglinparab
 
 import (
+	"errors"
 	"fmt"
 	"labs/charting"
 	"labs/uncsv"
@@ -24,16 +25,21 @@ const (
 )
 
 var (
-	bestA = 0.0
-	bestB = 0.0
-	bestC = 0.0
+	bestLinA = 0.0
+	bestLinB = 0.0
+
+	bestParA = 0.0
+	bestParB = 0.0
+	bestParC = 0.0
 
 	hasTrained = false
 
-	exchangeRateData = &ExchageRateHistory{}
+	exchangeRateData = &ExchangeRateHistory{}
+	testData         = &ExchangeRateHistory{}
+	trainData        = &ExchangeRateHistory{}
 )
 
-type ExchageRateHistory struct {
+type ExchangeRateHistory struct {
 	Date         []string  `csv:"Дата"`
 	ExchangeRate []float64 `csv:"Офіційний курс гривні"`
 }
@@ -43,45 +49,47 @@ var (
 		LabID,
 		"Linear and Parabolic Approximation",
 		map[string]*charting.Chart{
-			ChartTrainDataID:           &TrainDataChart,
-			ChartTestDataID:            &TestDataChart,
-			ChartOptimalLinearParamsID: &OptimalLinearParamsChart,
-			// ChartOptimalParabolicParamsID: &OptimalParabolicParamsChart,
+			ChartTrainDataID: &TrainDataChart,
+			ChartTestDataID:  &TestDataChart,
 		},
 	)
 
 	TrainDataChart = charting.Chart{
 		ID:          ChartTrainDataID,
 		Type:        charting.ChartTypeLine,
-		Title:       "Train Data",
+		Title:       "Training Data",
 		XAxisLabel:  "Date",
 		XAxisConfig: charting.CategoryAxis,
 		YAxisLabel:  "Amount",
 		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]charting.Dataset{
+			GraphOriginalDataID:    &OriginalDataGraph,
+			GraphLinearApproxID:    &LinearApproxGraph,
+			GraphParabolicApproxID: &ParabolicApproxGraph,
+		},
+		ChartVariables: []charting.MutableField{
+			LinearFitCoefficients,
+			ParabolicFitCoefficients,
+		},
 	}
 
 	TestDataChart = charting.Chart{
 		ID:          ChartTestDataID,
 		Type:        charting.ChartTypeLine,
-		Title:       "Test Data",
+		Title:       "Testing Data",
 		XAxisLabel:  "Date",
 		XAxisConfig: charting.CategoryAxis,
 		YAxisLabel:  "Amount",
 		YAxisConfig: charting.LinearAxis,
-	}
-
-	// We'll leave it for now, i don't know how
-	// tp make a chart of the optimal parabolic params
-	OptimalParabolicParamsChart = charting.Chart{}
-
-	OptimalLinearParamsChart = charting.Chart{
-		ID:          ChartOptimalLinearParamsID,
-		Type:        charting.ChartTypeHeatmap,
-		Title:       "Optimal Linear Params (A + Bt)",
-		XAxisLabel:  "A",
-		XAxisConfig: charting.LinearAxis,
-		YAxisLabel:  "B",
-		YAxisConfig: charting.LinearAxis,
+		Datasets: map[string]charting.Dataset{
+			GraphOriginalDataID:    &OriginalDataGraph,
+			GraphLinearApproxID:    &LinearApproxGraph,
+			GraphParabolicApproxID: &ParabolicApproxGraph,
+		},
+		ChartVariables: []charting.MutableField{
+			LinearFitCoefficients,
+			ParabolicFitCoefficients,
+		},
 	}
 
 	OriginalDataGraph = charting.GridDataset{
@@ -109,11 +117,10 @@ var (
 
 	LinearApproxGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
-			Label:          "Linear Approximation",
-			BorderColor:    charting.ToColor("#16a34a"),
-			BorderWidth:    2,
-			Togglable:      true,
-			GraphVariables: []charting.MutableField{LinearFitCoefficients},
+			Label:       "Linear Approximation",
+			BorderColor: charting.ToColor("#16a34a"),
+			BorderWidth: 2,
+			Togglable:   true,
 		},
 		BackgroundColor: charting.ToColor("rgba(22, 163, 74, 0.1)"),
 		PointRadius:     0,
@@ -121,19 +128,18 @@ var (
 
 	ParabolicApproxGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
-			Label:          "Parabolic Approximation",
-			BorderColor:    charting.ToColor("#9333ea"),
-			BorderWidth:    2,
-			Togglable:      true,
-			GraphVariables: []charting.MutableField{ParabolicFitCoefficients},
+			Label:       "Parabolic Approximation",
+			BorderColor: charting.ToColor("#9333ea"),
+			BorderWidth: 2,
+			Togglable:   true,
 		},
 		BackgroundColor: charting.ToColor("rgba(147, 51, 234, 0.1)"),
 		PointRadius:     0,
 	}
 )
 
-func loadExchageHistory() error {
-	if len(exchangeRateData.ExchangeRate) > 0 {
+func loadExchangeHistory() error {
+	if len(trainData.ExchangeRate) > 0 && len(testData.ExchangeRate) > 0 {
 		return nil
 	}
 	f, err := os.Open("./data/lab_9_var_12.csv")
@@ -143,11 +149,22 @@ func loadExchageHistory() error {
 	defer f.Close()
 
 	d := uncsv.NewDecoder(f)
-	d.Comma = ';'
-	exchangeRateData = &ExchageRateHistory{}
+	d.Comma = ','
+
+	exchangeRateData = &ExchangeRateHistory{}
 	if err := d.Decode(exchangeRateData); err != nil {
-		return fmt.Errorf("error decoding csv: %w", err)
+		return err
 	}
+	n := len(exchangeRateData.ExchangeRate)
+	if n < 4 {
+		return errors.New("not enough data for training and testing")
+	}
+
+	splitIdx := n / 2
+	trainData.ExchangeRate = exchangeRateData.ExchangeRate[:splitIdx]
+	trainData.Date = exchangeRateData.Date[:splitIdx]
+	testData.ExchangeRate = exchangeRateData.ExchangeRate[splitIdx:]
+	testData.Date = exchangeRateData.Date[splitIdx:]
 
 	return nil
 }

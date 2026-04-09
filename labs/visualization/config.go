@@ -22,3 +22,10 @@ var (
 
 	Metadata = Config.Lab
 )
+
+func init() {
+	BarChart.RenderFunc = RenderBarPlot
+	FunctionChart.RenderFunc = RenderFunction
+	LinearChart.RenderFunc = RenderLinear
+	RadialChart.RenderFunc = RenderRadialPlot
+}

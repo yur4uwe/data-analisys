@@ -38,17 +38,17 @@ func (a *App) startup(ctx context.Context) {
 
 	a.cache = NewResponseCache()
 
-	// Register lab factories (no instantiation yet)
-	a.registry[labs.Lab2ID] = labs.NewLab2()
-	a.registry[polyapprox.LabID] = labs.NewLab3()
-	a.registry[visualization.LabID] = labs.NewLab4()
-	a.registry[statslab.LabID] = labs.NewLab5()
-	a.registry[cluster.LabID] = labs.NewLab6()
-	a.registry[forecasting.LabID] = labs.NewLab7()
-	a.registry[holt.LabID] = labs.NewLab8()
-	a.registry[forecastinglinparab.LabID] = labs.NewLab9()
+	// Register lab factories using GenericProvider
+	a.registry[labs.Lab2ID] = charting.NewProvider(labs.Config)
+	a.registry[polyapprox.LabID] = charting.NewProvider(polyapprox.Config)
+	a.registry[visualization.LabID] = charting.NewProvider(visualization.Config)
+	a.registry[statslab.LabID] = charting.NewProvider(statslab.Config)
+	a.registry[cluster.LabID] = charting.NewProvider(cluster.Config)
+	a.registry[forecasting.LabID] = charting.NewProvider(forecasting.Config)
+	a.registry[holt.LabID] = charting.NewProvider(holt.Config)
+	a.registry[forecastinglinparab.LabID] = charting.NewProvider(forecastinglinparab.LinParabConfig)
 
-	fmt.Printf("Registered %d labs (lazy initialization)\n", len(a.registry))
+	fmt.Printf("Registered %d labs\n", len(a.registry))
 }
 
 func (a *App) GetLabs() charting.GetLabsResponse {

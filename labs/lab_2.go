@@ -166,6 +166,10 @@ var (
 	Metadata = Config.Lab
 )
 
+func init() {
+	main.RenderFunc = Render
+}
+
 func recurringAvg(x, prevAvg float64, len int) float64 {
 	return prevAvg + (x-prevAvg)/float64(len)
 }
@@ -182,20 +186,7 @@ func exponentialAvg(x, prevAvg float64, alpha float64) float64 {
 	return prevAvg + alpha*(x-prevAvg)
 }
 
-type Lab2Provider struct {
-}
-
-var _ charting.LabProvider = Lab2Provider{}
-
-func NewLab2() *Lab2Provider {
-	return &Lab2Provider{}
-}
-
-func (lp Lab2Provider) GetMetadata() charting.LabMetadata {
-	return Metadata
-}
-
-func (lp Lab2Provider) Render(req *charting.RenderRequest) (res *charting.RenderResponse) {
+func Render(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	interval_start, has_start := req.GetChartVariable(mainChartID, intervalStartID)
 	interval_end, has_end := req.GetChartVariable(mainChartID, intervalEndID)
 	interval_step, has_step := req.GetChartVariable(mainChartID, intervalStepID)
@@ -294,8 +285,4 @@ func (lp Lab2Provider) Render(req *charting.RenderRequest) (res *charting.Render
 			mainChartID: chartCopy,
 		},
 	}
-}
-
-func (lp Lab2Provider) GetConfig() charting.LabConfig {
-	return Config
 }

@@ -18,6 +18,41 @@ type LabConfig struct {
 	Charts map[string]*Chart `json:"charts"`
 }
 
+// GenericProvider implements LabProvider for standard lab implementations
+type GenericProvider struct {
+	Config LabConfig
+}
+
+func NewProvider(config LabConfig) *GenericProvider {
+	return &GenericProvider{Config: config}
+}
+
+func (p *GenericProvider) GetMetadata() LabMetadata {
+	return p.Config.Lab
+}
+
+func (p *GenericProvider) GetConfig() LabConfig {
+	return p.Config
+}
+
+func (p *GenericProvider) Render(req *RenderRequest) *RenderResponse {
+	res := NewRenderResponse()
+	if req == nil {
+		return res.NewError("request is nil")
+	}
+
+	chart, ok := p.Config.Charts[req.ChartID]
+	if !ok {
+		return res.NewErrorf("chart with id %q not found", req.ChartID)
+	}
+
+	if chart.RenderFunc == nil {
+		return res.NewErrorf("chart with id %q has no render function defined", req.ChartID)
+	}
+
+	return chart.RenderFunc(req)
+}
+
 func NewLabConfig(labID, labName string, charts map[string]*Chart) LabConfig {
 	chartsMeta := make(map[string]ChartMetadata, len(charts))
 	for id, chart := range charts {

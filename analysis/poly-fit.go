@@ -5,9 +5,27 @@ import (
 	"math"
 )
 
+// Uses Horner's method for evaluating polynomials.
+//
+// Formula:
+//
+//	y = (...(((a1x + a2)x + a3)x + a4) ... )x + an)
+func EvaluatePolynomial(coeffs []float64, x float64) float64 {
+	if len(coeffs) == 0 {
+		return 0
+	}
+
+	result := coeffs[len(coeffs)-1]
+	for i := len(coeffs) - 2; i >= 0; i-- {
+		result = result*x + coeffs[i]
+	}
+	return result
+}
+
 // SolvePolynomialFit finds the least squares polynomial fit of given degree.
 // Returns coefficients [a0, a1, a2, ..., an] where y = a0 + a1*x + a2*x^2 + ... + an*x^n.
 // Uses the standard normal equations method (sum of powers).
+// Due to bad decisions, degree provided should be n-1 of the expected amount of coefficients.
 func SolvePolynomialFit(xVals []float64, yVals []float64, degree int) ([]float64, error) {
 	if len(xVals) != len(yVals) || len(xVals) == 0 {
 		return nil, errors.New("invalid input")
