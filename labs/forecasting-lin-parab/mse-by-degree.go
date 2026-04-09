@@ -23,7 +23,7 @@ var (
 		XAxisLabel:  "Degree",
 		XAxisConfig: charting.LinearAxis,
 		YAxisLabel:  "MSE",
-		YAxisConfig: charting.LinearAxis,
+		YAxisConfig: charting.LogarithmicAxis,
 		Datasets: map[string]charting.Dataset{
 			GraphTrainMSEID: &TrainMSEGraph,
 			GraphTestMSEID:  &TestMSEGraph,

@@ -3,6 +3,17 @@ import { getDataLabels } from "./chart-render";
 import { hexToRgb } from "./heatmap-plugin";
 import { Dataset, isGridDataset, isHeatmapDataset } from "./types";
 
+export const formatScientific = (value: number | string): string => {
+	const num = typeof value === "string" ? parseFloat(value) : value;
+	if (isNaN(num)) return value.toString();
+	if (num === 0) return "0";
+	const absNum = Math.abs(num);
+	if (absNum >= 1e6 || absNum <= 1e-3) {
+		return num.toExponential(2);
+	}
+	return num.toLocaleString(undefined, { maximumFractionDigits: 4 });
+};
+
 export const defaultChartOptions = (title: string, chartType?: string) => ({
 	responsive: true,
 	maintainAspectRatio: false,
@@ -55,10 +66,11 @@ export const defaultChartOptions = (title: string, chartType?: string) => ({
 					if (ctx.dataset.type === 'matrix') {
 						const d = ctx.dataset.data[ctx.dataIndex];
 						if (d) {
-							return `MSE: ${d.v.toPrecision(6)} (α: ${d.x.toFixed(2)}, β: ${d.y.toFixed(2)})`;
+							return `MSE: ${formatScientific(d.v)} (α: ${d.x.toFixed(2)}, β: ${d.y.toFixed(2)})`;
 						}
 					}
-					return ctx.formattedValue;
+					const val = ctx.raw?.y ?? ctx.raw ?? ctx.formattedValue;
+					return `${ctx.dataset.label}: ${formatScientific(val)}`;
 				}
 			}
 		},
@@ -254,6 +266,7 @@ export function newScales(chartConfig: charting.Chart, hasContinuousAxes: boolea
 				font: {
 					size: 12,
 				},
+				callback: (value: any) => formatScientific(value),
 			},
 			grid: {
 				color: (ctx: any) =>

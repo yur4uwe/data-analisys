@@ -27,6 +27,8 @@ const (
 	VariablePolyDegreeID       = "poly-degree"
 	VariableMaxPolyDegreeID    = "max-poly-degree"
 	VariableValidationDegreeID = "validation-degree"
+	VariableDisplayCoefsID      = "display-coefs"
+	VariableDisplayParabCoefsID = "display-parab-coefs"
 )
 
 var (

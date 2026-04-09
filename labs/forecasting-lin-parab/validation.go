@@ -35,6 +35,8 @@ var (
 		},
 		ChartVariables: []charting.MutableField{
 			ValidationDegreeField,
+			DisplayLinCoefs,
+			DisplayParabCoefs,
 		},
 	}
 
@@ -72,11 +74,23 @@ var (
 		HideLine:        false,
 	}
 
+	DisplayLinCoefs = charting.MutableField{
+		ID:      VariableDisplayCoefsID,
+		Label:   "Linear Coefficients",
+		Control: charting.ControlNoControl,
+	}
+
+	DisplayParabCoefs = charting.MutableField{
+		ID:      VariableDisplayParabCoefsID,
+		Label:   "Parabolic Coefficients",
+		Control: charting.ControlNoControl,
+	}
+
 	LinearApproxGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
 			Label:       "Linear Trend (Degree 1)",
-			BorderColor: charting.ToColor("#16a34a"),
-			BorderWidth: 1,
+			BorderColor: charting.ColorCrimson,
+			BorderWidth: 2,
 			Togglable:   true,
 			Hidden:      true,
 		},
@@ -88,7 +102,7 @@ var (
 		BaseDataset: charting.BaseDataset{
 			Label:       "Parabolic Trend (Degree 2)",
 			BorderColor: charting.ToColor("#9333ea"),
-			BorderWidth: 1,
+			BorderWidth: 2,
 			Togglable:   true,
 			Hidden:      true,
 		},
@@ -155,8 +169,18 @@ func RenderModelValidation(req *charting.RenderRequest) (res *charting.RenderRes
 		parPredicted[i] = analysis.EvaluatePolynomial(parCoefs, float64(i))
 	}
 
+	linTrainMSE := analysis.MSE(trainData.ExchangeRate, linPredicted[:splitIdx])
+	linTestMSE := analysis.MSE(testData.ExchangeRate, linPredicted[splitIdx:])
+	parTrainMSE := analysis.MSE(trainData.ExchangeRate, parPredicted[:splitIdx])
+	parTestMSE := analysis.MSE(testData.ExchangeRate, parPredicted[splitIdx:])
+
 	copyChart := charting.CopyChart(ModelValidationChart)
 	copyChart.Labels = fullDates
+
+	copyChart.ChartVariables[1].Label = fmt.Sprintf("Linear: y = %.4f + %.4f*x | Train MSE: %.2e | Test MSE: %.2e",
+		linCoefs[0], linCoefs[1], linTrainMSE, linTestMSE)
+	copyChart.ChartVariables[2].Label = fmt.Sprintf("Parabolic: y = %.4f + %.4f*x + %.4f*x^2 | Train MSE: %.2e | Test MSE: %.2e",
+		parCoefs[0], parCoefs[1], parCoefs[2], parTrainMSE, parTestMSE)
 
 	copyChart.UpdateDataPointsForDataset(GraphOriginalDataID, charting.F64ToPoints(fullRates))
 	copyChart.UpdateDataPointsForDataset(GraphTrainFitID, charting.F64PtrToPoints(fitY))
