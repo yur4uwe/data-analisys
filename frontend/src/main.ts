@@ -6,14 +6,10 @@ import { createLabTabs, updateAllFieldLabels } from "./lab-init";
 
 import { GetLabs } from "../wailsjs/go/main/App";
 import { charting } from "../wailsjs/go/models";
-import { Chart, registerables } from "chart.js";
-import ChartDataLabels from "chartjs-plugin-datalabels";
 import { EventsOn } from "../wailsjs/runtime";
 import { renderMultiChart, renderChartInto } from "./chart-render";
 import { registry } from "./registry";
 import { SafeChart } from "./types";
-
-Chart.register(...registerables, ChartDataLabels);
 
 // State
 
@@ -48,7 +44,6 @@ EventsOn("renderComplete", (data: charting.RenderResponse) => {
     console.log("Render completed successfully,", window.activeChartId);
 
     const activeChartData = data.charts[window.activeChartId!] as unknown as SafeChart;
-
 
     if (activeChartData.type.startsWith("multi-")) {
       renderMultiChart(activeChartData);

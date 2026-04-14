@@ -281,36 +281,35 @@ func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderRespons
 
 	// 2. Tomorrow as Today
 	tatForecast := make([]*float64, n)
-	tatForecast[0] = nil
 	for i := 1; i < n; i++ {
-		*tatForecast[i] = tomorrowAsToday(rates[i-1])
+		val := tomorrowAsToday(rates[i-1])
+		tatForecast[i] = &val
 	}
 	copyChart.UpdateDataPointsForDataset(GraphTomorrowAsTodayID, charting.F64PtrToPoints(tatForecast))
 	updateGraphStats(copyChart.Datasets[GraphTomorrowAsTodayID], rates, tatForecast)
 
 	// 3. Trend
 	trendForecast := make([]*float64, n)
-	trendForecast[0] = nil
-	trendForecast[1] = nil
 	for i := 2; i < n; i++ {
-		*trendForecast[i] = trend(rates[i-1], rates[i-2])
+		val := trend(rates[i-1], rates[i-2])
+		trendForecast[i] = &val
 	}
 	copyChart.UpdateDataPointsForDataset(GraphTrendID, charting.F64PtrToPoints(trendForecast))
 	updateGraphStats(copyChart.Datasets[GraphTrendID], rates, trendForecast)
 
 	// 4. Relative Trend
 	relTrendForecast := make([]*float64, n)
-	relTrendForecast[0] = nil
-	relTrendForecast[1] = nil
 	for i := 2; i < n; i++ {
-		*relTrendForecast[i] = relativeTrend(rates[i-1], rates[i-2])
+		val := relativeTrend(rates[i-1], rates[i-2])
+		relTrendForecast[i] = &val
 	}
 	copyChart.UpdateDataPointsForDataset(GraphRelativeTrendID, charting.F64PtrToPoints(relTrendForecast))
 	updateGraphStats(copyChart.Datasets[GraphRelativeTrendID], rates, relTrendForecast)
 
 	simpleAvgForecast := make([]*float64, n)
 	for i := range n {
-		*simpleAvgForecast[i] = simpleAvg(rates[:min(i+1, n)])
+		val := simpleAvg(rates[:min(i+1, n)])
+		simpleAvgForecast[i] = &val
 	}
 	copyChart.UpdateDataPointsForDataset(GraphSimpleAvgID, charting.F64PtrToPoints(simpleAvgForecast))
 	updateGraphStats(copyChart.Datasets[GraphSimpleAvgID], rates, simpleAvgForecast)
@@ -318,10 +317,12 @@ func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderRespons
 	// 5. Sliding Average
 	slidingForecast := make([]*float64, n)
 	win := int(slidingWindow)
-	slidingForecast[0] = &rates[0]
+	initialVal := rates[0]
+	slidingForecast[0] = &initialVal
 	for i := 1; i < n; i++ {
 		limit := min(i, win)
-		*slidingForecast[i] = slidingAvg(rates[:i], limit)
+		val := slidingAvg(rates[:i], limit)
+		slidingForecast[i] = &val
 	}
 	copyChart.UpdateDataPointsForDataset(GraphSlidingAvgID, charting.F64PtrToPoints(slidingForecast))
 	slidingDs := copyChart.Datasets[GraphSlidingAvgID]
@@ -330,9 +331,11 @@ func RenderForecasting(req *charting.RenderRequest) (res *charting.RenderRespons
 
 	// 6. Exponential Smoothing
 	expForecast := make([]*float64, n)
-	expForecast[0] = &rates[0] // Initial seed
+	expInitialVal := rates[0]
+	expForecast[0] = &expInitialVal // Initial seed
 	for i := 1; i < n; i++ {
-		*expForecast[i] = exponentialAvg(rates[i-1], *expForecast[i-1], alpha)
+		val := exponentialAvg(rates[i-1], *expForecast[i-1], alpha)
+		expForecast[i] = &val
 	}
 	copyChart.UpdateDataPointsForDataset(GraphExponentialAvgID, charting.F64PtrToPoints(expForecast))
 	expDs := copyChart.Datasets[GraphExponentialAvgID]

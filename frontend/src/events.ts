@@ -1,4 +1,3 @@
-import { Chart } from "chart.js";
 import { fetchChartData } from "./fetch";
 import { registry } from "./registry";
 import { InitializeChart, InitializeLab } from "./lab-init";
@@ -31,17 +30,12 @@ declare global {
   interface Window {
     activeChartId: string | null;
     activeLabId: string | null;
-    chartInstances: Map<string, Chart>;
   }
   interface WindowEventMap {
     activeLabChange: ActiveLabChangeEvent;
     activeChartChange: ActiveChartChangeEvent;
     rerender: RerenderEvent;
   }
-}
-
-if (!window.chartInstances) {
-  window.chartInstances = new Map<string, Chart>();
 }
 
 window.addEventListener(

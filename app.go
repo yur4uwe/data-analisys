@@ -10,6 +10,7 @@ import (
 	"labs/labs/forecasting"
 	forecastinglinparab "labs/labs/forecasting-lin-parab"
 	"labs/labs/holt"
+	"labs/labs/optimizations"
 	"labs/labs/polyapprox"
 	"labs/labs/render"
 	statslab "labs/labs/stats"
@@ -46,6 +47,7 @@ func (a *App) startup(ctx context.Context) {
 	a.registry[cluster.LabID] = charting.NewProvider(cluster.Config)
 	a.registry[forecasting.LabID] = charting.NewProvider(forecasting.Config)
 	a.registry[holt.LabID] = charting.NewProvider(holt.Config)
+	a.registry[optimizations.LabID] = charting.NewProvider(optimizations.Config)
 	a.registry[forecastinglinparab.LabID] = charting.NewProvider(forecastinglinparab.LinParabConfig)
 
 	fmt.Printf("Registered %d labs\n", len(a.registry))

@@ -1,115 +1,26 @@
-import { Chart, ChartTypeRegistry, ScaleChartOptions } from "chart.js";
-import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
-import ChartDataLabels from "chartjs-plugin-datalabels";
-import ZoomPlugin from "chartjs-plugin-zoom";
+import * as Plotly from "plotly.js-dist-min";
 import { charting } from "../wailsjs/go/models";
-import { heatmapLegendPlugin } from "./heatmap-plugin";
-import { defaultChartOptions, newScales, processDataset } from "./static-config";
+import { defaultPlotlyLayout, newPlotlyAxes, processDatasetToPlotly } from "./static-config";
 import { SafeChart } from "./types";
 
-Chart.register(MatrixController, MatrixElement, ChartDataLabels, ZoomPlugin);
-
-Chart.register(heatmapLegendPlugin);
-
-// Store chart instances globally for access
-declare global {
-  interface Window {
-    chartInstances: Map<string, Chart>;
-  }
-}
-
-if (!window.chartInstances) {
-  window.chartInstances = new Map();
-}
-
 /**
- * Destroys all currently active Chart.js instances.
- * Crucial for preventing WebKit SIGSEGV crashes during tab switching.
+ * Destroys all currently active Plotly instances.
  */
 export function destroyAllCharts() {
-  console.log("Destroying all active chart instances...");
-  window.chartInstances.forEach((chart, id) => {
-    try {
-      chart.destroy();
-    } catch (e) {
-      console.warn(`Failed to destroy chart ${id}:`, e);
-    }
+  const containers = document.querySelectorAll(".plotly-graph-div");
+  containers.forEach((container) => {
+    Plotly.purge(container as HTMLElement);
   });
-  window.chartInstances.clear();
 }
 
 /**
- * Destroys a specific chart instance and its children (if it was part of a multi-chart).
+ * Destroys a specific chart instance.
  */
-export function destroyPreviousChart(chartId: string) {
-  // Check for the main chart ID
-  const mainChart = window.chartInstances.get(chartId);
-  if (mainChart) {
-    mainChart.destroy();
-    window.chartInstances.delete(chartId);
-  }
-
-  // Also check for potential synthetic sub-charts (pattern: chartId-datasetId)
-  const prefix = `${chartId}-`;
-  for (const id of Array.from(window.chartInstances.keys())) {
-    if (id.startsWith(prefix)) {
-      const subChart = window.chartInstances.get(id);
-      if (subChart) {
-        subChart.destroy();
-        window.chartInstances.delete(id);
-      }
-    }
-  }
-}
-
-export function getDataLabels(
-  dataLabels: string[] | undefined,
-  chartType: keyof ChartTypeRegistry,
-) {
-  if (Array.isArray(dataLabels) && dataLabels.length > 0) {
-    return {
-      display: true,
-      formatter: (_: any, ctx: any) => {
-        if (!dataLabels || ctx.dataIndex >= dataLabels.length) return "";
-        return dataLabels[ctx.dataIndex] ?? "";
-      },
-      anchor: "end" as const,
-      align: "top" as const,
-      color: "#000000",
-      font: { weight: "bold" as const, size: 11 },
-      backgroundColor: "rgba(255,255,255,0.85)",
-      borderRadius: 3,
-      padding: 4,
-    };
-  }
-
-  switch (chartType) {
-    case "pie":
-    case "doughnut":
-      return {
-        display: true,
-        color: "#ffffff",
-        font: { weight: "bold" as const, size: 14 },
-        formatter: (value: number, ctx: any) => {
-          const data = ctx.dataset.data as number[];
-          if (!data || data.length === 0) return value;
-          const total = data.reduce((a, b) => a + b, 0);
-          if (total === 0) return value;
-          const pct = ((value / total) * 100).toFixed(1);
-          return `${value}\n(${pct}%)`;
-        },
-      };
-
-    case "bar":
-      return {
-        display: false,
-        color: "#ffffff",
-        font: { weight: "bold" as const, size: 14 },
-      };
-    default:
-      return {
-        display: false,
-      };
+export function destroyPreviousChart(containerId: string) {
+  const container = document.getElementById(containerId);
+  if (container) {
+    Plotly.purge(container);
+    container.innerHTML = "";
   }
 }
 
@@ -119,83 +30,45 @@ export function renderChartInto(chartConfig: SafeChart, container: HTMLElement) 
     return;
   }
 
-  // Destroy previous instances of this specific chart (including synthetic sub-charts)
-  destroyPreviousChart(chartConfig.id);
-
-  // Clear previous content
+  const chartType = chartConfig.type || "line";
+  const plotlyContainerId = `plotly-${chartConfig.id}`;
+  
+  // Reset container to block (in case it was a grid from multi-chart mode)
+  container.style.display = "block";
+  container.style.gridTemplateColumns = "none";
+  
+  // Clear previous content and create a dedicated plotly div
   container.innerHTML = "";
+  const plotlyDiv = document.createElement("div");
+  plotlyDiv.id = plotlyContainerId;
+  plotlyDiv.style.width = "100%";
+  plotlyDiv.style.height = "100%";
+  plotlyDiv.className = "plotly-graph-div";
+  container.appendChild(plotlyDiv);
 
-  const canvas = document.createElement("canvas");
-  canvas.id = `chart-${chartConfig.id}`;
-  container.appendChild(canvas);
+  console.log("Rendering Plotly chart ID:", chartConfig.id, "Type:", chartType);
 
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    console.error("renderChartInto: Canvas context is null!");
-    return;
-  }
+  const labels = Array.isArray(chartConfig.labels) ? chartConfig.labels : [];
+  const traces = Object.values(chartConfig.datasets || {}).map(processDatasetToPlotly(chartType, labels));
 
-  const chartType = (chartConfig.type as keyof ChartTypeRegistry) || "line";
-  console.log("Rendering chart ID:", chartConfig.id, "Type:", chartType);
+  const layout = {
+    ...defaultPlotlyLayout(chartConfig.title || "", chartType),
+    ...newPlotlyAxes(chartConfig)
+  };
 
-  const hasScales = !["pie", "doughnut", "polarArea"].includes(chartType);
-  const hasContinuousAxes = ["scatter", "line", "bubble"].includes(chartType);
+  const config: Partial<Plotly.Config> = {
+    responsive: true,
+    displaylogo: false,
+    modeBarButtonsToRemove: ["select2d", "lasso2d"]
+  };
 
-  let chartLabels: string[] = Array.isArray(chartConfig.labels) ? chartConfig.labels : [];
-
-  // Process datasets based on chart type
-  const processedDatasets = Object.values(chartConfig.datasets || {}).map(processDataset(chartType));
-
-  let maxDataLength = 0
-  for (const dataset of processedDatasets) {
-    maxDataLength = Math.max(dataset.data.length, maxDataLength);
-  }
-
-  // Use the labels provided or fallback to data length if needed
-  if (chartLabels.length === 0 && maxDataLength > 0 && !hasContinuousAxes) {
-    chartLabels = Array.from({ length: maxDataLength }, (_, i) => `Point ${i + 1}`);
-  } else if (chartLabels.length < maxDataLength && !hasContinuousAxes) {
-    // Pad labels if they are shorter than data (important for Category axis)
-    const padding = Array.from({ length: maxDataLength - chartLabels.length }, (_, i) => `(no label) ${chartLabels.length + i + 1}`);
-    chartLabels = [...chartLabels, ...padding];
-  }
-
-  const chartOptions: any = defaultChartOptions(chartConfig.title || "", chartType);
-
-  // Only add scales for charts that use them
-  if (hasScales) {
-    chartOptions.scales = newScales(
-      chartConfig,
-      hasContinuousAxes,
-    ) as unknown as ScaleChartOptions;
-  }
-
-  console.log(`Initializing Chart.js for ${chartConfig.id} with ${chartLabels.length} labels`);
-
-  try {
-    const chart = new Chart(ctx, {
-      type: chartType,
-      data: {
-        labels: chartLabels,
-        datasets: processedDatasets as any[],
-      },
-      options: chartOptions,
+  // Use requestAnimationFrame to ensure the div is in the DOM and has dimensions
+  requestAnimationFrame(() => {
+    Plotly.newPlot(plotlyDiv, traces as any, layout as any, config).then(() => {
+      // One more resize to be absolutely sure layout changes during render didn't break it
+      Plotly.Plots.resize(plotlyDiv);
     });
-    window.chartInstances.set(chartConfig.id, chart);
-  } catch (err) {
-    console.error(`Failed to initialize Chart.js for ${chartConfig.id}:`, err);
-  }
-
-  const resetZoom = document.getElementById("reset-zoom-btn");
-  if (resetZoom) {
-    const resetZoomCallback = () => {
-      const instance = window.chartInstances.get(chartConfig.id);
-      if (instance) {
-        (instance as any).resetZoom();
-      }
-    };
-    resetZoom.onclick = resetZoomCallback;
-  }
+  });
 }
 
 export function renderMultiChart(chartConfig: SafeChart) {
@@ -204,59 +77,59 @@ export function renderMultiChart(chartConfig: SafeChart) {
     return;
   }
 
-  console.log("Rendering multiple charts for:", chartConfig.id);
   const container = document.getElementById("chart-container")!;
-  if (!container) {
-    console.error("renderMultiChart: chart-container not found");
-    return;
-  }
+  if (!container) return;
 
   container.innerHTML = "";
   container.style.display = "grid";
-  container.style.gridTemplateColumns = "repeat(auto-fit, minmax(320px, 1fr))";
-  container.style.gap = "16px";
+  container.style.gridTemplateColumns = "repeat(auto-fit, minmax(450px, 1fr))";
+  container.style.gap = "20px";
 
-  const singleType = (chartConfig.type || "").replace("multi-", "") as keyof ChartTypeRegistry;
-  const labels = Array.isArray(chartConfig.labels) ? chartConfig.labels : [];
+  const singleType = (chartConfig.type || "").replace("multi-", "");
 
-  Object.entries(chartConfig.datasets).forEach(([datasetId, dataset]) => {
-    if (!dataset) return;
+  // 1. Create all wrappers first so the grid layout is fully established
+  const tasks = Object.entries(chartConfig.datasets).map(([datasetId, dataset]) => {
+    if (!dataset) return null;
 
     const wrapper = document.createElement("div");
     wrapper.className = "chart-wrapper";
-    wrapper.style.position = "relative";
-    wrapper.style.minHeight = "400px";
-    wrapper.style.height = "400px";
-    wrapper.style.width = "100%";
+    wrapper.style.minHeight = "450px";
+    wrapper.style.minWidth = "0"; 
+    wrapper.style.overflow = "hidden";
     container.appendChild(wrapper);
 
-    // Each cluster should ideally have its own labels matching its data length
-    let clusterLabels = labels;
-    if (!labels && (dataset as any).dataLabels && (dataset as any).dataLabels.length > 0) {
-      clusterLabels = (dataset as any).dataLabels;
-    }
-
-    // Synthetic single-dataset chart reusing all config from parent
     const syntheticChart = charting.Chart.createFrom({
       ...chartConfig,
-      labels: clusterLabels,
       type: singleType,
       id: `${chartConfig.id}-${datasetId}`,
       title: dataset.label || datasetId,
       datasets: { [datasetId]: dataset },
     }) as unknown as SafeChart;
 
-    renderChartInto(syntheticChart, wrapper);
+    return { chart: syntheticChart, wrapper };
+  }).filter(t => t !== null);
+
+  // 2. Render all charts after the browser has had a chance to reflow the grid
+  requestAnimationFrame(() => {
+    tasks.forEach(task => {
+      if (task) renderChartInto(task.chart, task.wrapper);
+    });
   });
 }
 
 // Helper functions for dataset control
 export function toggleDatasetVisibility(chartId: string, datasetIndex: number) {
-  const chart = window.chartInstances.get(chartId);
-  if (chart) {
-    chart.data.datasets[datasetIndex].hidden =
-      !chart.data.datasets[datasetIndex].hidden;
-
-    chart.update();
+  // Plotly containers in our app have IDs like `plotly-${chartId}`
+  const plotlyContainerId = `plotly-${chartId}`;
+  const container = document.getElementById(plotlyContainerId);
+  
+  if (container) {
+    const data = (container as any).data;
+    if (data && data[datasetIndex]) {
+      const currentVisible = data[datasetIndex].visible;
+      const nextVisible = currentVisible === true ? "legendonly" : true;
+      
+      Plotly.restyle(container, { visible: nextVisible } as any, [datasetIndex]);
+    }
   }
 }

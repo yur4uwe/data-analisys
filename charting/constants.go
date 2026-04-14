@@ -34,6 +34,7 @@ const (
 	ChartTypeBubble  GraphType = "bubble"
 	ChartTypePie     GraphType = "pie"
 	ChartTypeHeatmap GraphType = "heatmap"
+	ChartTypeSurface GraphType = "surface"
 
 	ChartTypeMultiLine    GraphType = "multi-line"
 	ChartTypeMultiBar     GraphType = "multi-bar"
