@@ -13,8 +13,7 @@ const (
 	TwoDimChartID = "two-dim"
 
 	DataGraphID   = "orig-data"
-	MinOptGraphID = "opt-path-min"
-	MaxOptGraphID = "opt-path-max"
+	OptGraphID    = "opt-path-min"
 
 	VarStartID = "start"
 	VarEndID   = "end"
@@ -232,23 +231,13 @@ var (
 		},
 	}
 
-	MinOptGraph = charting.GridDataset{
+	OptGraph = charting.GridDataset{
 		BaseDataset: charting.BaseDataset{
 			Label:       "Minimization Path",
 			BorderColor: charting.ColorRed,
 			BorderWidth: 3,
 		},
 		BackgroundColor: charting.ColorRed,
-		PointRadius:     10,
-	}
-
-	MaxOptGraph = charting.GridDataset{
-		BaseDataset: charting.BaseDataset{
-			Label:       "Maximization Path",
-			BorderColor: charting.ColorGreen,
-			BorderWidth: 3,
-		},
-		BackgroundColor: charting.ColorGreen,
 		PointRadius:     10,
 	}
 
@@ -264,9 +253,8 @@ var (
 			VarStart, VarEnd, VarStep,
 		},
 		Datasets: map[string]charting.Dataset{
-			DataGraphID:   &OneDimGraph,
-			MinOptGraphID: &MinOptGraph,
-			MaxOptGraphID: &MaxOptGraph,
+			DataGraphID: &OneDimGraph,
+			OptGraphID:  &OptGraph,
 		},
 	}
 
@@ -283,9 +271,8 @@ var (
 			VarYStart, VarYEnd, VarYStep,
 		},
 		Datasets: map[string]charting.Dataset{
-			DataGraphID:   &TwoDimGraph,
-			MinOptGraphID: &MinOptGraph,
-			MaxOptGraphID: &MaxOptGraph,
+			DataGraphID: &TwoDimGraph,
+			OptGraphID:  &OptGraph,
 		},
 	}
 )
@@ -298,16 +285,16 @@ func onedimf(x float64) float64 {
 }
 
 func twodimf(x, y float64) float64 {
-	c1 := 1.9
-	c2 := 0.0
-	term1 := (x - c1) * (x - c1)
+	c1 := 1.5
+	c2 := -1.15
+	term1 := (x + c1) * (x + c1)
 	term2 := (y - c2) * (y - c2)
-	inner := term1 - term2
+	inner := term1 + term2
 	res := (inner * inner) + (c1 * c1) - (c2 * c2)
 	if res <= 0 {
 		return math.NaN()
 	}
-	return -math.Log(res)
+	return math.Log(res)
 }
 
 // processOptimizationPath is a generalized pseudo n-dim path processor.
@@ -340,7 +327,7 @@ func processOptimizationPath(
 		}
 	}
 
-	if len(px) > 0 {
+	if len(px) > 1 {
 		last := path[len(path)-1]
 		lastVal := f(last...)
 
@@ -391,11 +378,9 @@ func RenderOneDim(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	chartCopy.UpdatePointsForDataset(DataGraphID, x, y)
 
 	f1d := func(args ...float64) float64 { return onedimf(args[0]) }
-	f1dNeg := func(args ...float64) float64 { return -onedimf(args[0]) }
-	fNeg := func(arg float64) float64 { return -onedimf(arg) }
 
 	if methodIdx != 0 {
-		var pathMin, pathMax [][]float64
+		var pathMin [][]float64
 
 		switch methodIdx {
 		case 1: // Dichotomic Search
@@ -404,37 +389,27 @@ func RenderOneDim(req *charting.RenderRequest) (res *charting.RenderResponse) {
 			for i, v := range pMin {
 				pathMin[i] = []float64{v}
 			}
-			pMax := dichotomicSearch(fNeg, start, end, tol)
-			pathMax = make([][]float64, len(pMax))
-			for i, v := range pMax {
-				pathMax[i] = []float64{v}
-			}
 		case 2: // Random Search
-			chartCopy.Datasets[MaxOptGraphID].(*charting.GridDataset).HideLine = true
-			chartCopy.Datasets[MinOptGraphID].(*charting.GridDataset).HideLine = true
+			chartCopy.Datasets[OptGraphID].(*charting.GridDataset).HideLine = true
 			bounds := [][]float64{{start, end}}
-			pathMin, pathMax = randomSearchNdim(f1d, int(samples), bounds)
+			pathMin = randomSearchNdim(f1d, int(samples), bounds)
 		case 3: // Fast Descent
 			bounds := [][]float64{{start, end}}
 			pathMin = fastDescentNdim(f1d, []float64{x0}, bounds, 0.01, tol, lr)
-			pathMax = fastDescentNdim(f1dNeg, []float64{x0}, bounds, 0.01, tol, lr)
 		}
 
-		px, py, resMin, okMin := processOptimizationPath(pathMin, f1d)
-		chartCopy.UpdatePointsForDataset(MinOptGraphID, px, py)
-		px, py, resMax, okMax := processOptimizationPath(pathMax, f1d)
-		chartCopy.UpdatePointsForDataset(MaxOptGraphID, px, py)
+		px, py, res, ok := processOptimizationPath(pathMin, f1d)
+		chartCopy.UpdatePointsForDataset(OptGraphID, px, py)
 
 		var resMsg string
-		if okMin || okMax {
-			resMsg = fmt.Sprintf("Min: %s | Max: %s", resMin, resMax)
+		if ok {
+			resMsg = fmt.Sprintf("Min: %s", res)
 		} else {
 			resMsg = "Result: Failed (NaN)"
 		}
 		chartCopy.Datasets[DataGraphID].UpdateVariableLabel(VarOptResultID, resMsg)
 	} else {
-		chartCopy.UpdatePointsForDataset(MinOptGraphID, nil, nil)
-		chartCopy.UpdatePointsForDataset(MaxOptGraphID, nil, nil)
+		chartCopy.UpdatePointsForDataset(OptGraphID, nil, nil)
 		chartCopy.Datasets[DataGraphID].UpdateVariableLabel(VarOptResultID, "Result: None")
 	}
 
@@ -481,38 +456,32 @@ func RenderTwoDim(req *charting.RenderRequest) (res *charting.RenderResponse) {
 	chartCopy.UpdateDataForDataset(DataGraphID, points)
 
 	f2d := func(args ...float64) float64 { return twodimf(args[0], args[1]) }
-	f2dNeg := func(args ...float64) float64 { return -twodimf(args[0], args[1]) }
 
 	if methodIdx != 0 {
-		var pathMin, pathMax [][]float64
+		var path [][]float64
 
 		switch methodIdx {
 		case 1: // Random Search
-			chartCopy.Datasets[MaxOptGraphID].(*charting.GridDataset).HideLine = true
-			chartCopy.Datasets[MinOptGraphID].(*charting.GridDataset).HideLine = true
+			chartCopy.Datasets[OptGraphID].(*charting.GridDataset).HideLine = true
 			bounds := [][]float64{{xStart, xEnd}, {yStart, yEnd}}
-			pathMin, pathMax = randomSearchNdim(f2d, int(samples), bounds)
+			path = randomSearchNdim(f2d, int(samples), bounds)
 		case 2: // Fast Descent
 			bounds := [][]float64{{xStart, xEnd}, {yStart, yEnd}}
-			pathMin = fastDescentNdim(f2d, []float64{x0, y0}, bounds, 0.01, tol, lr)
-			pathMax = fastDescentNdim(f2dNeg, []float64{x0, y0}, bounds, 0.01, tol, lr)
+			path = fastDescentNdim(f2d, []float64{x0, y0}, bounds, 0.01, tol, lr)
 		}
 
-		px, py, resMin, okMin := processOptimizationPath(pathMin, f2d)
-		chartCopy.UpdatePointsForDataset(MinOptGraphID, px, py)
-		px, py, resMax, okMax := processOptimizationPath(pathMax, f2d)
-		chartCopy.UpdatePointsForDataset(MaxOptGraphID, px, py)
+		px, py, res, ok := processOptimizationPath(path, f2d)
+		chartCopy.UpdatePointsForDataset(OptGraphID, px, py)
 
 		var resMsg string
-		if okMin || okMax {
-			resMsg = fmt.Sprintf("Min: %s | Max: %s", resMin, resMax)
+		if ok {
+			resMsg = fmt.Sprintf("Min: %s", res)
 		} else {
 			resMsg = "Result: Failed (NaN)"
 		}
 		chartCopy.Datasets[DataGraphID].UpdateVariableLabel(VarOptResultID, resMsg)
 	} else {
-		chartCopy.UpdatePointsForDataset(MinOptGraphID, nil, nil)
-		chartCopy.UpdatePointsForDataset(MaxOptGraphID, nil, nil)
+		chartCopy.UpdatePointsForDataset(OptGraphID, nil, nil)
 		chartCopy.Datasets[DataGraphID].UpdateVariableLabel(VarOptResultID, "Result: None")
 	}
 

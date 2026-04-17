@@ -12,8 +12,6 @@ const (
 
 func dichotomicSearch(f func(float64) float64, a, b, tol float64) []float64 {
 	path := []float64{(a + b) / 2}
-	// epsilon must be significantly smaller than tol
-	// typically eps < tol/2. If tol=0.01, eps=0.001 is better.
 	eps := tol / 4
 	for range maxIter {
 		if math.Abs(a-b) < tol {
@@ -32,15 +30,13 @@ func dichotomicSearch(f func(float64) float64, a, b, tol float64) []float64 {
 	return path
 }
 
-// randomSearchNdim finds the extremum for a function with N variables.
+// randomSearchNdim finds the minimum for a function with N variables.
 // bounds is an Nx2 slice where each element is [min, max] for that dimension.
-func randomSearchNdim(f func(...float64) float64, nSamples int, bounds [][]float64) (minPath, maxPath [][]float64) {
+func randomSearchNdim(f func(...float64) float64, nSamples int, bounds [][]float64) (minPath [][]float64) {
 	dims := len(bounds)
 	minVal := math.MaxFloat64
-	maxVal := -math.MaxFloat64
 
 	currMin := make([]float64, dims)
-	currMax := make([]float64, dims)
 
 	for range nSamples {
 		point := make([]float64, dims)
@@ -56,15 +52,8 @@ func randomSearchNdim(f func(...float64) float64, nSamples int, bounds [][]float
 			copy(p, currMin)
 			minPath = append(minPath, p)
 		}
-		if val > maxVal {
-			maxVal = val
-			copy(currMax, point)
-			p := make([]float64, dims)
-			copy(p, currMax)
-			maxPath = append(maxPath, p)
-		}
 	}
-	return minPath, maxPath
+	return minPath
 }
 
 func isInvalid(f float64) bool {

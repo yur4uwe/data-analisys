@@ -84,16 +84,16 @@ func RenderRandomPolynomialMSE(req *charting.RenderRequest) (res *charting.Rende
 	bestDegree := 1
 	minMSE := -1.0
 
-	fmt.Printf("Calculating MSE for %s\n", RandomMSEID)
+	// fmt.Printf("Calculating MSE for %s\n", RandomMSEID)
 	for degree := range maxDegree - 1 {
 		degree += 1
 		coeffs, err := analysis.SolvePolynomialFit(x, y, degree)
 		if err != nil {
-			fmt.Printf("Degree %d: fit failed (%s)\n", degree, err)
+			// fmt.Printf("Degree %d: fit failed (%s)\n", degree, err)
 			continue
 		}
 		mse := CalculateMSE(x, y, coeffs)
-		fmt.Printf("Degree %d: MSE = %.4e\n", degree, mse)
+		// fmt.Printf("Degree %d: MSE = %.4e\n", degree, mse)
 
 		if minMSE < 0 || mse < minMSE {
 			minMSE = mse
