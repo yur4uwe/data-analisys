@@ -29,6 +29,7 @@ type BaseDataset struct {
 	Togglable      bool           `json:"togglable"`
 	DataLabels     []string       `json:"dataLabels,omitempty"`
 	GraphVariables []MutableField `json:"fields,omitempty"`
+	ZIndex         int            `json:"zIndex"` // Higher means on top
 }
 
 func (bd *BaseDataset) GetType() GraphType {

@@ -53,44 +53,7 @@ func RenderClusters(req *charting.RenderRequest) (res *charting.RenderResponse) 
 
 	chartCopy := charting.CopyChart(ClustersChart)
 
-	colors := [...]charting.Color{
-		charting.ColorAmber,
-		charting.ColorBlue,
-		charting.ColorCyan,
-		charting.ColorEmerald,
-		charting.ColorLightPurple,
-		charting.ColorIndigo,
-		charting.ColorCrimson,
-		charting.ColorYellow,
-		charting.ColorLime,
-		charting.ColorPink,
-		charting.ColorFuchsia,
-	}
-
-	centroidLabels := make([]string, len(res_cluster.Centers))
-	centroids := make([]charting.DataPoint, len(res_cluster.Centers))
-	for i := range res_cluster.Centers {
-		centroidLabels[i] = fmt.Sprintf("Cluster %d", i)
-		centroids[i] = charting.DataPoint{
-			X: res_cluster.Centers[i][0],
-			Y: &res_cluster.Centers[i][1],
-		}
-	}
-
-	chartCopy.Datasets["centroids"] = &charting.GridDataset{
-		BaseDataset: charting.BaseDataset{
-			Label:       "Centroids",
-			BorderColor: "#000000",
-			BorderWidth: 3,
-			DataLabels:  centroidLabels,
-		},
-		BackgroundColor: "#ffffff",
-		PointRadius:     12,
-		PointStyle:      "star",
-		Data:            centroids,
-		HideLine:        true,
-	}
-
+	// First, calculate cluster points and update centers to original space
 	for cluster := range int(numClusters) {
 		cluster_points := make([]charting.DataPoint, 0)
 		centerX, centerY := 0.0, 0.0
@@ -116,7 +79,7 @@ func RenderClusters(req *charting.RenderRequest) (res *charting.RenderResponse) 
 		chartCopy.Datasets[key] = &charting.GridDataset{
 			BaseDataset: charting.BaseDataset{
 				Label:       fmt.Sprintf("Cluster %d", cluster),
-				BorderColor: colors[cluster%len(colors)],
+				BorderColor: GetClusterColor(cluster),
 				BorderWidth: 2,
 			},
 			BackgroundColor: charting.ColorTransparent,
@@ -124,6 +87,32 @@ func RenderClusters(req *charting.RenderRequest) (res *charting.RenderResponse) 
 			Data:            cluster_points,
 			HideLine:        true,
 		}
+	}
+
+	// Now create the centroids dataset using recalculated centers
+	centroidLabels := make([]string, len(res_cluster.Centers))
+	centroids := make([]charting.DataPoint, len(res_cluster.Centers))
+	for i := range res_cluster.Centers {
+		centroidLabels[i] = fmt.Sprintf("Cluster %d", i)
+		centroids[i] = charting.DataPoint{
+			X: res_cluster.Centers[i][0],
+			Y: &res_cluster.Centers[i][1],
+		}
+	}
+
+	chartCopy.Datasets["centroids"] = &charting.GridDataset{
+		BaseDataset: charting.BaseDataset{
+			Label:       "Centroids",
+			BorderColor: "#000000",
+			BorderWidth: 3,
+			DataLabels:  centroidLabels,
+			ZIndex:      10, // Ensure centroids are on top
+		},
+		BackgroundColor: "#ffffff",
+		PointRadius:     12,
+		PointStyle:      "star",
+		Data:            centroids,
+		HideLine:        true,
 	}
 
 	// Add unclustered points if any

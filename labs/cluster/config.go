@@ -96,6 +96,7 @@ func clusterData(labels []int, centroids []charting.DataPoint, chart *charting.C
 			BorderColor: "#000000",
 			BorderWidth: 3,
 			DataLabels:  centroidLabels,
+			ZIndex:      10, // Ensure centroids are drawn on top
 		},
 		BackgroundColor: "#ffffff",
 		PointRadius:     12,

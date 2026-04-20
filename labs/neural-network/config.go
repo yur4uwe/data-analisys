@@ -143,6 +143,23 @@ func init() {
 	ClustersChart.RenderFunc = RenderClusters
 }
 
+func GetClusterColor(idx int) charting.Color {
+	colors := []charting.Color{
+		charting.ColorBlue,
+		charting.ColorAmber,
+		charting.ColorCyan,
+		charting.ColorEmerald,
+		charting.ColorLightPurple,
+		charting.ColorIndigo,
+		charting.ColorCrimson,
+		charting.ColorYellow,
+		charting.ColorLime,
+		charting.ColorPink,
+		charting.ColorFuchsia,
+	}
+	return colors[idx%len(colors)]
+}
+
 func loadData() error {
 	if data != nil {
 		return nil

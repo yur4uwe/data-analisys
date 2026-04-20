@@ -49,7 +49,13 @@ export function renderChartInto(chartConfig: SafeChart, container: HTMLElement) 
   console.log("Rendering Plotly chart ID:", chartConfig.id, "Type:", chartType);
 
   const labels = Array.isArray(chartConfig.labels) ? chartConfig.labels : [];
-  const traces = Object.values(chartConfig.datasets || {}).map(processDatasetToPlotly(chartType, labels));
+  
+  // Sort datasets by zIndex before creating traces to control drawing order
+  const sortedDatasets = Object.values(chartConfig.datasets || {}).sort((a, b) => {
+    return (a.zIndex || 0) - (b.zIndex || 0);
+  });
+
+  const traces = sortedDatasets.map(processDatasetToPlotly(chartType, labels));
 
   // Extract frames if any dataset is an AnimationDataset
   let maxFrames = 0;

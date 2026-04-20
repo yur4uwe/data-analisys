@@ -58,7 +58,7 @@ func RenderWeights(req *charting.RenderRequest) (res *charting.RenderResponse) {
 			BaseDataset: charting.BaseDataset{
 				Label:       fmt.Sprintf("Cluster %d", clusterIdx),
 				Type:        charting.ChartTypeScatter,
-				BorderColor: getClusterColor(int(clusterIdx)),
+				BorderColor: GetClusterColor(int(clusterIdx)),
 				BorderWidth: 2,
 			},
 			Data:   frames[0],
@@ -75,15 +75,4 @@ func RenderWeights(req *charting.RenderRequest) (res *charting.RenderResponse) {
 
 func ptr(v float64) *float64 {
 	return &v
-}
-
-func getClusterColor(idx int) charting.Color {
-	colors := []charting.Color{
-		charting.ColorBlue,
-		charting.ColorRed,
-		charting.ColorGreen,
-		charting.ColorPurple,
-		charting.ColorOrange,
-	}
-	return colors[idx%len(colors)]
 }

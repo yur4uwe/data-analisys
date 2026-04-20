@@ -30,6 +30,7 @@ export type BaseDataset = {
     togglable: boolean
     dataLabels: string[]
     fields: charting.MutableField[]
+    zIndex: number
 }
 
 /**
