@@ -89,6 +89,11 @@ func RenderBoundary(req *charting.RenderRequest) (res *charting.RenderResponse) 
 	precision := int(varPrecision)
 
 	act, _ := getActivation(actIdx, alpha)
+	isTanh := act(-10.0) < -0.5
+	threshold := 0.5
+	if isTanh {
+		threshold = 0.0
+	}
 
 	// Get specific training result
 	trainRes := lastTrainResults[actIdx]
@@ -103,7 +108,7 @@ func RenderBoundary(req *charting.RenderRequest) (res *charting.RenderResponse) 
 	testConf := forwardSingle([]float64{testX, testY})
 
 	class := 0
-	if testConf >= 0.5 {
+	if testConf >= threshold {
 		class = 1
 	}
 	predText := fmt.Sprintf("Point (%.2f, %.2f) -> Prediction: %.4f (Class %d)",

@@ -140,6 +140,13 @@ func RenderTrajectory(req *charting.RenderRequest) (res *charting.RenderResponse
 		finalB = 0
 	}
 
+	// Numerically check if the activation is Tanh-like (range -1 to 1)
+	isTanh := act(-10.0) < -0.5
+	lowTarget := 0.0
+	if isTanh {
+		lowTarget = -1.0
+	}
+
 	heatPoints := make([]any, 0)
 	for i := 0; i <= precision; i++ {
 		gw1 := safe(roundTo(minW1+float64(i)*step1, step1/1000))
@@ -150,7 +157,7 @@ func RenderTrajectory(req *charting.RenderRequest) (res *charting.RenderResponse
 			var totalLoss float64
 			for k := range trainData.X {
 				pred := forward([]float64{trainData.X[k], trainData.Y[k]})
-				target := 0.0
+				target := lowTarget
 				if trainData.Class[k] {
 					target = 1.0
 				}

@@ -15,6 +15,7 @@ const (
 	BoundaryChartID    = "boundary"
 	ConvergenceChartID = "convergence"
 	TrajectoryChartID  = "trajectory"
+	ActivationChartID  = "activation"
 
 	// Variable IDs
 	VarEpochsID           = "epochs"
@@ -155,6 +156,7 @@ var (
 			BoundaryChartID:    &BoundaryChart,
 			ConvergenceChartID: &ConvergenceChart,
 			TrajectoryChartID:  &TrajectoryChart,
+			ActivationChartID:  &ActivationChart,
 		},
 	)
 
@@ -199,6 +201,7 @@ func init() {
 	BoundaryChart.RenderFunc = RenderBoundary
 	ConvergenceChart.RenderFunc = RenderConvergence
 	TrajectoryChart.RenderFunc = RenderTrajectory
+	ActivationChart.RenderFunc = RenderActivation
 }
 
 func loadData() error {

@@ -23,9 +23,15 @@ func newForward(activation func(float64) float64, w []float64, b float64) func([
 func calculateLoss(data *ClassificationData, w []float64, b float64, activation func(float64) float64) float64 {
 	totalLoss := 0.0
 	forward := newForward(activation, w, b)
+	isTanh := activation(-10.0) < -0.5
+	lowTarget := 0.0
+	if isTanh {
+		lowTarget = -1.0
+	}
+
 	for i := range data.X {
 		pred := forward([]float64{data.X[i], data.Y[i]})
-		target := 0.0
+		target := lowTarget
 		if data.Class[i] {
 			target = 1.0
 		}
@@ -38,6 +44,13 @@ func calculateLoss(data *ClassificationData, w []float64, b float64, activation 
 func train(split *ClassificationSplit, maxEpochs uint32, lr float64, targetAccuracy float64, activation func(float64) float64, actDerivative func(float64) float64) TrainingResult {
 	trainSet := split.Train
 	valSet := split.Validation
+
+	// Numerically check if the activation is Tanh-like (range -1 to 1)
+	isTanh := activation(-10.0) < -0.5
+	lowTarget := 0.0
+	if isTanh {
+		lowTarget = -1.0
+	}
 
 	points := make([][]float64, len(trainSet.X))
 	for i := range trainSet.X {
@@ -62,7 +75,7 @@ func train(split *ClassificationSplit, maxEpochs uint32, lr float64, targetAccur
 			forward := newForward(activation, w, b)
 			pred := forward(points[pointIdx])
 
-			target := 0.0
+			target := lowTarget
 			if trainSet.Class[pointIdx] {
 				target = 1.0
 			}
@@ -112,9 +125,14 @@ func train(split *ClassificationSplit, maxEpochs uint32, lr float64, targetAccur
 	testSet := split.Test
 	correct := 0
 	forwardTest := newForward(activation, w, b)
+	threshold := 0.5
+	if isTanh {
+		threshold = 0.0
+	}
+
 	for i := range testSet.X {
 		pred := forwardTest([]float64{testSet.X[i], testSet.Y[i]})
-		predClass := pred >= 0.5
+		predClass := pred >= threshold
 		if predClass == testSet.Class[i] {
 			correct++
 		}
